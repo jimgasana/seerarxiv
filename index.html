@@ -1,0 +1,2367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Rwanda Mining Transparency Platform · RMTP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0e1621;
+  --surface:#162030;
+  --raised:#1d2d42;
+  --border:#243650;
+  --border-light:#2e4464;
+  --text:#e2eaf5;
+  --text-dim:#8aa8c8;
+  --muted:#4a6480;
+  --gold:#c8890f;
+  --gold-light:#e8a820;
+  --emerald:#0fa870;
+  --emerald-bg:rgba(15,168,112,.1);
+  --sapphire:#1a8fef;
+  --sapphire-bg:rgba(26,143,239,.1);
+  --ruby:#e03050;
+  --ruby-bg:rgba(224,48,80,.1);
+  --amber:#d96a10;
+  --amber-bg:rgba(217,106,16,.1);
+  --copper:#c4692a;
+  --sidebar-w:240px;
+  --header-h:60px;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Source Sans 3',sans-serif;font-size:14px;overflow:hidden}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--border-light)}
+
+input,select,textarea{
+  font-family:'Source Sans 3',sans-serif;font-size:13px;
+  background:var(--raised);border:1px solid var(--border);
+  color:var(--text);border-radius:7px;padding:9px 12px;
+  outline:none;width:100%;box-sizing:border-box;transition:border-color .15s
+}
+input:focus,select:focus,textarea:focus{border-color:var(--sapphire)}
+textarea{resize:vertical;min-height:80px;line-height:1.6}
+select option{background:var(--raised)}
+button{font-family:'Source Sans 3',sans-serif;cursor:pointer;border-radius:7px;transition:all .15s}
+
+/* ─── LAYOUT ─── */
+#app{display:flex;flex-direction:column;height:100vh}
+#header{
+  height:var(--header-h);display:flex;align-items:center;
+  padding:0 24px;border-bottom:1px solid var(--border);
+  background:var(--surface);flex-shrink:0;gap:20px;z-index:100
+}
+#workspace{flex:1;display:flex;overflow:hidden}
+#sidebar{
+  width:var(--sidebar-w);flex-shrink:0;
+  border-right:1px solid var(--border);
+  background:var(--surface);
+  display:flex;flex-direction:column;
+  overflow-y:auto;padding:12px 0
+}
+#main{flex:1;overflow-y:auto;padding:28px 32px;position:relative}
+
+/* ─── HEADER ─── */
+.logo-mark{
+  width:36px;height:36px;border-radius:9px;flex-shrink:0;
+  background:linear-gradient(135deg,#1a6040,#0d3a28);
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;border:1px solid rgba(15,168,112,.3)
+}
+.logo-text{flex:1}
+.logo-name{font-family:'Syne',sans-serif;font-size:15px;font-weight:800;letter-spacing:.5px;color:var(--text)}
+.logo-sub{font-size:10px;color:var(--muted);letter-spacing:.5px;margin-top:1px}
+.header-right{display:flex;align-items:center;gap:10px;margin-left:auto}
+.role-badge{
+  display:flex;align-items:center;gap:6px;
+  background:var(--raised);border:1px solid var(--border);
+  border-radius:6px;padding:6px 12px;font-size:12px;color:var(--text-dim)
+}
+.role-dot{width:7px;height:7px;border-radius:50%;background:var(--emerald);flex-shrink:0}
+
+/* ─── SIDEBAR NAV ─── */
+.sb-group-label{
+  font-size:10px;font-weight:700;letter-spacing:1.5px;
+  color:var(--muted);padding:14px 18px 6px;text-transform:uppercase
+}
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 18px;cursor:pointer;transition:all .15s;
+  border-left:3px solid transparent;margin:1px 0
+}
+.nav-item:hover{background:rgba(255,255,255,.04);color:var(--text)}
+.nav-item.active{
+  background:rgba(15,168,112,.08);
+  border-left-color:var(--emerald);
+  color:var(--emerald)
+}
+.nav-item.active .nav-label{color:var(--emerald);font-weight:600}
+.nav-icon{font-size:15px;width:20px;text-align:center;flex-shrink:0;opacity:.8}
+.nav-label{font-size:13px;color:var(--text-dim)}
+.nav-count{
+  margin-left:auto;background:var(--raised);
+  border-radius:4px;padding:1px 6px;
+  font-size:10px;font-family:'JetBrains Mono',monospace;
+  color:var(--muted)
+}
+.nav-new{
+  margin-left:auto;background:var(--emerald);
+  border-radius:4px;padding:1px 5px;
+  font-size:9px;font-weight:700;color:#0e1621
+}
+.sidebar-footer{
+  margin-top:auto;padding:14px 18px;
+  border-top:1px solid var(--border);
+  font-size:10px;color:var(--muted);line-height:1.7
+}
+.sidebar-footer strong{color:var(--text-dim)}
+
+/* ─── PAGE HEADER ─── */
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;gap:16px}
+.page-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--text);line-height:1.2}
+.page-sub{font-size:12px;color:var(--muted);margin-top:4px;letter-spacing:.3px}
+.page-actions{display:flex;gap:8px;flex-shrink:0}
+
+/* ─── BUTTONS ─── */
+.btn{border:none;border-radius:7px;padding:9px 18px;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:all .15s}
+.btn-primary{background:var(--emerald);color:#0e1621}
+.btn-primary:hover{background:#12c882;box-shadow:0 4px 12px rgba(15,168,112,.3)}
+.btn-secondary{background:var(--raised);color:var(--text-dim);border:1px solid var(--border)}
+.btn-secondary:hover{border-color:var(--border-light);color:var(--text)}
+.btn-gold{background:var(--gold);color:#0e1621}
+.btn-gold:hover{background:var(--gold-light)}
+.btn-danger{background:var(--ruby-bg);color:var(--ruby);border:1px solid rgba(224,48,80,.25)}
+.btn-danger:hover{background:rgba(224,48,80,.18)}
+.btn-sm{padding:6px 12px;font-size:12px;border-radius:6px}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text-dim)}
+.btn-outline:hover{border-color:var(--border-light);color:var(--text)}
+
+/* ─── KPI CARDS ─── */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px}
+.kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;position:relative;overflow:hidden}
+.kpi-card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:12px 12px 0 0}
+.kpi-label{font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px}
+.kpi-value{font-family:'Syne',sans-serif;font-size:28px;font-weight:700;line-height:1;color:var(--text)}
+.kpi-sub{font-size:11px;color:var(--muted);margin-top:6px}
+.kpi-change{font-size:11px;font-weight:600;margin-top:4px}
+.kpi-change.up{color:var(--emerald)}
+.kpi-change.dn{color:var(--ruby)}
+
+/* ─── CARDS ─── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px}
+.card-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border)}
+.card-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:600;color:var(--text)}
+.card-body{padding:20px}
+
+/* ─── TABLE ─── */
+.data-table{width:100%;border-collapse:collapse}
+.data-table th{
+  text-align:left;font-size:11px;font-weight:700;
+  color:var(--muted);letter-spacing:.8px;text-transform:uppercase;
+  padding:10px 14px;background:var(--raised);border-bottom:1px solid var(--border)
+}
+.data-table td{
+  padding:12px 14px;border-bottom:1px solid var(--border);
+  font-size:13px;color:var(--text-dim);transition:background .1s
+}
+.data-table tr:last-child td{border-bottom:none}
+.data-table tr:hover td{background:rgba(255,255,255,.025);cursor:pointer}
+.data-table td.primary{color:var(--text);font-weight:600}
+.data-table td.mono{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--emerald)}
+
+/* ─── BADGES / TAGS ─── */
+.badge{display:inline-flex;align-items:center;gap:4px;border-radius:5px;padding:3px 8px;font-size:11px;font-weight:600;border:1px solid}
+.badge-ok{color:var(--emerald);border-color:rgba(15,168,112,.3);background:var(--emerald-bg)}
+.badge-warn{color:var(--amber);border-color:rgba(217,106,16,.3);background:var(--amber-bg)}
+.badge-err{color:var(--ruby);border-color:rgba(224,48,80,.3);background:var(--ruby-bg)}
+.badge-info{color:var(--sapphire);border-color:rgba(26,143,239,.3);background:var(--sapphire-bg)}
+.badge-gold{color:var(--gold-light);border-color:rgba(200,137,15,.3);background:rgba(200,137,15,.1)}
+.badge-muted{color:var(--muted);border-color:var(--border);background:var(--raised)}
+
+/* ─── BATCH PASSPORT CARD ─── */
+.passport-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-left:4px solid var(--emerald);border-radius:12px;
+  padding:18px 20px;margin-bottom:12px;cursor:pointer;transition:all .15s
+}
+.passport-card:hover{border-color:rgba(15,168,112,.4);transform:translateX(3px);box-shadow:0 4px 20px rgba(0,0,0,.3)}
+.passport-id{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;color:var(--emerald);letter-spacing:1px;margin-bottom:5px}
+.passport-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:600;color:var(--text);margin-bottom:5px}
+.passport-meta{font-size:12px;color:var(--muted)}
+.passport-hash{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-top:8px;word-break:break-all;line-height:1.5}
+
+/* ─── CHAIN OF CUSTODY ─── */
+.chain-step{display:flex;gap:14px;margin-bottom:14px;position:relative}
+.chain-step:not(:last-child)::after{
+  content:'';position:absolute;left:14px;top:30px;bottom:-14px;
+  width:1px;background:linear-gradient(to bottom,var(--border),transparent)
+}
+.chain-dot{
+  width:30px;height:30px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;flex-shrink:0;border:2px solid
+}
+.chain-body{
+  flex:1;background:var(--raised);border:1px solid var(--border);
+  border-radius:9px;padding:14px
+}
+.chain-type{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px}
+.chain-title{font-size:13px;font-weight:600;color:var(--text)}
+.chain-date{font-size:11px;color:var(--muted);margin-top:3px}
+
+/* ─── MINE CARD ─── */
+.mine-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:12px;padding:18px 20px;margin-bottom:10px;
+  cursor:pointer;transition:all .15s
+}
+.mine-card:hover{border-color:var(--border-light);box-shadow:0 4px 16px rgba(0,0,0,.25)}
+.mine-name{font-family:'Syne',sans-serif;font-size:15px;font-weight:600;color:var(--text);margin-bottom:5px}
+.mine-meta{display:flex;gap:10px;flex-wrap:wrap;align-items:center;font-size:12px;color:var(--muted)}
+
+/* ─── PRICE CARDS ─── */
+.price-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px}
+.price-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:12px;padding:20px;transition:all .15s
+}
+.price-card:hover{border-color:var(--border-light)}
+.price-mineral{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.8px;text-transform:uppercase;margin-bottom:6px}
+.price-val{font-family:'Syne',sans-serif;font-size:24px;font-weight:700;color:var(--text);line-height:1}
+.price-unit{font-size:11px;color:var(--muted);margin-top:4px}
+.price-change{font-size:12px;font-weight:600;margin-top:8px;display:flex;align-items:center;gap:4px}
+.price-change.pos{color:var(--emerald)}
+.price-change.neg{color:var(--ruby)}
+.price-sparkline{height:36px;margin-top:10px;opacity:.6}
+
+/* ─── ROYALTY CALCULATOR ─── */
+.calc-panel{
+  display:grid;grid-template-columns:1fr 1fr;gap:24px;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:14px;padding:24px
+}
+.calc-result-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:11px 0;border-bottom:1px solid var(--border)
+}
+.calc-result-row:last-child{border-bottom:none}
+.calc-result-label{font-size:13px;color:var(--text-dim)}
+.calc-result-val{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--text)}
+.calc-result-val.accent{color:var(--emerald)}
+.calc-result-val.tax{color:var(--ruby)}
+.calc-result-row.total{border-top:2px solid var(--border);margin-top:4px;padding-top:14px}
+.calc-result-row.total .calc-result-label{font-weight:700;color:var(--text)}
+.calc-result-row.total .calc-result-val{font-size:20px;color:var(--gold-light)}
+
+/* ─── OECD STEPS ─── */
+.oecd-step{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:12px;margin-bottom:12px;overflow:hidden;transition:all .15s
+}
+.oecd-step-header{
+  display:flex;align-items:center;gap:14px;padding:16px 20px;
+  cursor:pointer
+}
+.oecd-step-header:hover{background:rgba(255,255,255,.025)}
+.oecd-step-num{
+  width:34px;height:34px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Syne',sans-serif;font-size:14px;font-weight:700;
+  flex-shrink:0;border:2px solid var(--border);color:var(--muted)
+}
+.oecd-step.done .oecd-step-num{
+  border-color:var(--emerald);background:var(--emerald-bg);color:var(--emerald)
+}
+.oecd-step.in-progress .oecd-step-num{
+  border-color:var(--amber);background:var(--amber-bg);color:var(--amber)
+}
+.oecd-step-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:600;color:var(--text)}
+.oecd-step-sub{font-size:12px;color:var(--muted);margin-top:2px}
+.oecd-step-body{padding:0 20px 20px;display:none}
+.oecd-step.open .oecd-step-body{display:block}
+.oecd-check{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.oecd-check:last-child{border-bottom:none}
+.oecd-check input[type=checkbox]{width:16px;height:16px;margin-top:2px;flex-shrink:0;cursor:pointer;accent-color:var(--emerald)}
+.oecd-check label{font-size:13px;color:var(--text-dim);cursor:pointer;line-height:1.5}
+
+/* ─── FLAG ROWS ─── */
+.flag-row{
+  display:flex;align-items:flex-start;gap:10px;
+  padding:12px 16px;border-radius:8px;border:1px solid;margin-bottom:8px
+}
+.flag-icon{font-size:14px;flex-shrink:0;margin-top:1px}
+.flag-content{flex:1}
+.flag-code{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;letter-spacing:.5px}
+.flag-msg{font-size:12px;margin-top:3px;color:var(--text-dim)}
+.flag-ok{border-color:rgba(15,168,112,.25);background:var(--emerald-bg)}
+.flag-ok .flag-code{color:var(--emerald)}
+.flag-warn{border-color:rgba(217,106,16,.25);background:var(--amber-bg)}
+.flag-warn .flag-code{color:var(--amber)}
+.flag-err{border-color:rgba(224,48,80,.25);background:var(--ruby-bg)}
+.flag-err .flag-code{color:var(--ruby)}
+
+/* ─── DIVIDER ─── */
+.divider{display:flex;align-items:center;gap:12px;margin:20px 0 14px}
+.divider hr{flex:1;border:none;border-top:1px solid var(--border)}
+.divider span{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:1.5px;white-space:nowrap;text-transform:uppercase}
+
+/* ─── HASH DISPLAY ─── */
+.hash-box{
+  background:var(--raised);border:1px solid rgba(15,168,112,.2);
+  border-radius:8px;padding:12px 16px;
+  font-family:'JetBrains Mono',monospace;font-size:11px;
+  color:var(--emerald);letter-spacing:.5px;word-break:break-all;line-height:1.6
+}
+
+/* ─── FORM HELPERS ─── */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.form-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-label{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.5px;text-transform:uppercase}
+.form-label .req{color:var(--ruby)}
+.form-row{margin-bottom:14px}
+
+/* ─── MODAL ─── */
+.modal-overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,.7);backdrop-filter:blur(4px);
+  z-index:500;align-items:flex-start;justify-content:center;
+  padding:24px;overflow-y:auto
+}
+.modal-overlay.on{display:flex}
+.modal-box{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:16px;width:100%;max-width:800px;
+  margin:auto;animation:slideUp .25s ease;overflow:hidden;
+  box-shadow:0 24px 64px rgba(0,0,0,.5)
+}
+.modal-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:20px 24px;border-bottom:1px solid var(--border)
+}
+.modal-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--text)}
+.modal-sub{font-size:12px;color:var(--muted);margin-top:3px}
+.modal-close{
+  background:var(--raised);border:1px solid var(--border);
+  color:var(--text-dim);padding:6px 12px;font-size:12px;border-radius:6px;cursor:pointer
+}
+.modal-close:hover{border-color:var(--ruby);color:var(--ruby)}
+.modal-body{padding:24px;max-height:75vh;overflow-y:auto}
+.modal-footer{
+  display:flex;align-items:center;justify-content:flex-end;
+  gap:10px;padding:16px 24px;border-top:1px solid var(--border);
+  background:var(--raised)
+}
+
+/* ─── NOTIF ─── */
+#notif{
+  position:fixed;top:16px;right:20px;z-index:999;
+  padding:12px 20px;border-radius:9px;font-weight:700;
+  font-size:13px;display:none;pointer-events:none;
+  box-shadow:0 8px 24px rgba(0,0,0,.4);border:1px solid
+}
+
+/* ─── DOC DROP ─── */
+.doc-drop{
+  border:2px dashed var(--border);border-radius:10px;
+  padding:20px;text-align:center;cursor:pointer;transition:all .15s;
+  background:var(--raised)
+}
+.doc-drop:hover,.doc-drop.over{border-color:var(--emerald);background:var(--emerald-bg)}
+.doc-drop p{font-size:12px;color:var(--muted);margin-top:6px}
+.doc-chip{
+  display:flex;align-items:center;gap:10px;
+  background:var(--raised);border:1px solid var(--border);
+  border-radius:8px;padding:10px 14px;margin-bottom:6px
+}
+.doc-icon{width:30px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.doc-name{font-size:12px;font-weight:600;color:var(--text)}
+.doc-meta{font-size:11px;color:var(--muted)}
+
+/* ─── ACTIVITY FEED ─── */
+.activity-item{
+  display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)
+}
+.activity-item:last-child{border-bottom:none}
+.act-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.act-content{flex:1}
+.act-text{font-size:13px;color:var(--text-dim)}
+.act-time{font-size:11px;color:var(--muted);margin-top:3px}
+
+/* ─── EMPTY STATE ─── */
+.empty-state{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty-icon{font-size:40px;opacity:.25;margin-bottom:14px}
+.empty-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--text-dim);margin-bottom:8px}
+.empty-text{font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.6}
+
+/* ─── GRID HELPERS ─── */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+
+/* ─── PROGRESS BAR ─── */
+.pbar{height:5px;background:var(--raised);border-radius:3px;overflow:hidden;margin-top:8px}
+.pbar-fill{height:100%;border-radius:3px;transition:width .6s ease}
+
+/* ─── TABS ─── */
+.tab-bar{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:20px;border-bottom:1px solid var(--border);padding-bottom:0}
+.tab-btn{
+  border:none;background:transparent;color:var(--muted);
+  padding:9px 18px;font-size:13px;font-weight:500;cursor:pointer;
+  border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s
+}
+.tab-btn:hover{color:var(--text)}
+.tab-btn.on{color:var(--emerald);border-bottom-color:var(--emerald);font-weight:600}
+
+/* ─── VIEWS ─── */
+.view{animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+/* ─── INFO GRID ─── */
+.info-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:16px}
+.info-cell{background:var(--raised);border:1px solid var(--border);border-radius:8px;padding:12px}
+.info-cell-label{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.8px;text-transform:uppercase;margin-bottom:5px}
+.info-cell-val{font-size:13px;font-weight:600;color:var(--text)}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:1000px){
+  #sidebar{display:none}
+  .kpi-grid{grid-template-columns:1fr 1fr}
+  .price-grid{grid-template-columns:1fr 1fr}
+  .calc-panel{grid-template-columns:1fr}
+  .form-grid,.grid2{grid-template-columns:1fr}
+}
+@media(max-width:600px){
+  #main{padding:16px}
+  .kpi-grid{grid-template-columns:1fr}
+  .price-grid{grid-template-columns:1fr}
+}
+
+/* ─── FOOTER ─── */
+.page-footer{
+  text-align:center;padding:20px 0 4px;
+  border-top:1px solid var(--border);margin-top:32px;
+  font-size:11px;color:var(--muted);line-height:1.8
+}
+.page-footer strong{color:var(--text-dim)}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ── HEADER ── -->
+<div id="header">
+  <div class="logo-mark">⛏</div>
+  <div class="logo-text">
+    <div class="logo-name">Rwanda Mining Transparency Platform</div>
+    <div class="logo-sub">RMTP · ASC &amp; Associates Ltd. · Jimmÿ Gasana · :WANDAHILL:</div>
+  </div>
+  <div class="header-right">
+    <div class="role-badge"><div class="role-dot"></div><span id="role-display">All Access</span></div>
+    <select id="role-select" onchange="setRole(this.value)" style="width:auto;padding:6px 10px;font-size:12px;border-radius:6px">
+      <option value="all">All Access</option>
+      <option value="miner">Miner / Cooperative</option>
+      <option value="regulator">Government / Regulator</option>
+      <option value="buyer">International Buyer</option>
+    </select>
+    <button class="btn btn-primary btn-sm" onclick="setView('export')">⬇ Export</button>
+  </div>
+</div>
+
+<!-- ── WORKSPACE ── -->
+<div id="workspace">
+
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    <div class="sb-group-label">Operations</div>
+    <div class="nav-item active" id="nav-dashboard" onclick="setView('dashboard')">
+      <span class="nav-icon">◉</span>
+      <span class="nav-label">Dashboard</span>
+    </div>
+    <div class="nav-item" id="nav-mines" onclick="setView('mines')">
+      <span class="nav-icon">🏭</span>
+      <span class="nav-label">Mine Registry</span>
+      <span class="nav-count" id="nc-mines">0</span>
+    </div>
+    <div class="nav-item" id="nav-batches" onclick="setView('batches')">
+      <span class="nav-icon">📦</span>
+      <span class="nav-label">Batch Passports</span>
+      <span class="nav-count" id="nc-batches">0</span>
+    </div>
+    <div class="nav-item" id="nav-chain" onclick="setView('chain')">
+      <span class="nav-icon">🔗</span>
+      <span class="nav-label">Chain of Custody</span>
+    </div>
+    <div class="nav-item" id="nav-transactions" onclick="setView('transactions')">
+      <span class="nav-icon">💳</span>
+      <span class="nav-label">Transactions</span>
+      <span class="nav-count" id="nc-txns">0</span>
+    </div>
+
+    <div class="sb-group-label">Intelligence</div>
+    <div class="nav-item" id="nav-prices" onclick="setView('prices')">
+      <span class="nav-icon">📈</span>
+      <span class="nav-label">Market Prices</span>
+      <span class="nav-new">LIVE</span>
+    </div>
+    <div class="nav-item" id="nav-calculator" onclick="setView('calculator')">
+      <span class="nav-icon">🧮</span>
+      <span class="nav-label">Royalty Calculator</span>
+    </div>
+    <div class="nav-item" id="nav-oecd" onclick="setView('oecd')">
+      <span class="nav-icon">📋</span>
+      <span class="nav-label">OECD Due Diligence</span>
+    </div>
+    <div class="nav-item" id="nav-compliance" onclick="setView('compliance')">
+      <span class="nav-icon">⚠️</span>
+      <span class="nav-label">Compliance &amp; Alerts</span>
+      <span class="nav-count" id="nc-alerts">0</span>
+    </div>
+
+    <div class="sb-group-label">Tools</div>
+    <div class="nav-item" id="nav-export" onclick="setView('export')">
+      <span class="nav-icon">📤</span>
+      <span class="nav-label">Export Reports</span>
+    </div>
+
+    <div class="sidebar-footer">
+      <strong>RMTP v2.0</strong><br>
+      AMS Mining Intelligence<br>
+      © Jimmÿ Gasana · :WANDAHILL:
+    </div>
+  </div>
+
+  <!-- MAIN PANEL -->
+  <div id="main">
+    <div id="view-dashboard" class="view"></div>
+    <div id="view-mines" class="view" style="display:none"></div>
+    <div id="view-batches" class="view" style="display:none"></div>
+    <div id="view-chain" class="view" style="display:none"></div>
+    <div id="view-transactions" class="view" style="display:none"></div>
+    <div id="view-prices" class="view" style="display:none"></div>
+    <div id="view-calculator" class="view" style="display:none"></div>
+    <div id="view-oecd" class="view" style="display:none"></div>
+    <div id="view-compliance" class="view" style="display:none"></div>
+    <div id="view-export" class="view" style="display:none"></div>
+  </div>
+</div>
+</div>
+
+<!-- ── MODALS ── -->
+
+<!-- Mine Modal -->
+<div class="modal-overlay" id="modal-mine">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div><div class="modal-title" id="mine-modal-title">Register Mine Site</div><div class="modal-sub">Rwanda Mining Transparency Platform · Mine Registry</div></div>
+      <button class="modal-close" onclick="closeModal('modal-mine')">✕ Close</button>
+    </div>
+    <div class="modal-body"><div id="mine-modal-body"></div></div>
+  </div>
+</div>
+
+<!-- Batch Modal -->
+<div class="modal-overlay" id="modal-batch">
+  <div class="modal-box" style="max-width:880px">
+    <div class="modal-header">
+      <div><div class="modal-title" id="batch-modal-title">New Ore Batch Passport</div><div class="modal-sub">Digital Passport · Chain of Custody · Traceability System</div></div>
+      <button class="modal-close" onclick="closeModal('modal-batch')">✕ Close</button>
+    </div>
+    <div class="modal-body"><div id="batch-modal-body"></div></div>
+  </div>
+</div>
+
+<!-- Processing Modal -->
+<div class="modal-overlay" id="modal-proc">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div><div class="modal-title">Record Processing Event</div><div class="modal-sub">Add processing step to batch chain of custody</div></div>
+      <button class="modal-close" onclick="closeModal('modal-proc')">✕ Close</button>
+    </div>
+    <div class="modal-body"><div id="proc-modal-body"></div></div>
+  </div>
+</div>
+
+<!-- Logistics Modal -->
+<div class="modal-overlay" id="modal-logistics">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div><div class="modal-title">Record Transport Event</div><div class="modal-sub">Add logistics step to batch chain of custody</div></div>
+      <button class="modal-close" onclick="closeModal('modal-logistics')">✕ Close</button>
+    </div>
+    <div class="modal-body"><div id="logistics-modal-body"></div></div>
+  </div>
+</div>
+
+<!-- Transaction Modal -->
+<div class="modal-overlay" id="modal-transaction">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div><div class="modal-title">New Transaction / Invoice</div><div class="modal-sub">Record financial transaction linked to a mineral batch</div></div>
+      <button class="modal-close" onclick="closeModal('modal-transaction')">✕ Close</button>
+    </div>
+    <div class="modal-body"><div id="txn-modal-body"></div></div>
+  </div>
+</div>
+
+<!-- Export Declaration Modal -->
+<div class="modal-overlay" id="modal-export-decl">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div><div class="modal-title">New Export Declaration</div><div class="modal-sub">Record export and origin certificate</div></div>
+      <button class="modal-close" onclick="closeModal('modal-export-decl')">✕ Close</button>
+    </div>
+    <div class="modal-body"><div id="export-decl-modal-body"></div></div>
+  </div>
+</div>
+
+<!-- Detail Modal -->
+<div class="modal-overlay" id="modal-detail">
+  <div class="modal-box" style="max-width:880px">
+    <div class="modal-header">
+      <div><div class="modal-title" id="detail-modal-title">Record Detail</div><div class="modal-sub">RMTP · Full Record View</div></div>
+      <button class="modal-close" onclick="closeModal('modal-detail')">✕ Close</button>
+    </div>
+    <div class="modal-body" id="detail-modal-body"></div>
+  </div>
+</div>
+
+<!-- OECD Report Modal -->
+<div class="modal-overlay" id="modal-oecd-report">
+  <div class="modal-box" style="max-width:900px">
+    <div class="modal-header">
+      <div><div class="modal-title">OECD Due Diligence Report</div><div class="modal-sub">Responsible Supply Chain · Conflict Minerals Framework</div></div>
+      <button class="modal-close" onclick="closeModal('modal-oecd-report')">✕ Close</button>
+    </div>
+    <div class="modal-body"><div id="oecd-report-body"></div></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-oecd-report')">Close</button>
+      <button class="btn btn-gold" onclick="downloadOECDReport()">⬇ Download Report</button>
+    </div>
+  </div>
+</div>
+
+<!-- Notif -->
+<div id="notif"></div>
+
+<script>
+'use strict';
+
+// ══════════════════════════════════════════════════════════════
+// CONSTANTS
+// ══════════════════════════════════════════════════════════════
+var MINERALS = ['Gold','Coltan (Columbite-Tantalite)','Cassiterite (Tin)','Wolframite (Tungsten)','Lithium','Copper','Beryllium','Niobium','Amblygonite','Gemstones (General)','Ruby','Sapphire','Tourmaline','Sand & Gravel','Limestone','Peat'];
+var MINE_MINERALS = ['Gold','Coltan','Cassiterite','Wolframite','Lithium','Copper','Gemstones','Mixed'];
+var COUNTRIES = ['Rwanda','DRC','Burundi','Uganda','Tanzania','Kenya','South Africa','International'];
+var RWANDAN_DISTRICTS = ['Kigali (Nyarugenge)','Kigali (Gasabo)','Kigali (Kicukiro)','Northern Province - Musanze','Northern Province - Rulindo','Northern Province - Gakenke','Northern Province - Burera','Northern Province - Gicumbi','Southern Province - Huye','Southern Province - Nyanza','Southern Province - Muhanga','Southern Province - Kamonyi','Southern Province - Ruhango','Southern Province - Nyamagabe','Southern Province - Gisagara','Southern Province - Nyaruguru','Eastern Province - Nyagatare','Eastern Province - Rwamagana','Eastern Province - Kayonza','Eastern Province - Kirehe','Eastern Province - Ngoma','Eastern Province - Bugesera','Western Province - Rubavu','Western Province - Nyabihu','Western Province - Ngororero','Western Province - Karongi','Western Province - Rutsiro','Western Province - Rusizi','Western Province - Nyamasheke'];
+var MINE_STATUS = ['Active','Under Review','Suspended','Closed','Exploration Phase','Development Phase'];
+var PROCESS_METHODS = ['Gravity Separation','Flotation','Cyanidation','Amalgamation','Leaching','Magnetic Separation','Electrostatic Separation','Smelting','Refining','Artisanal Hand Sorting'];
+var CURRENCIES = ['USD','EUR','RWF','GBP','CNY','CHF'];
+var PAYMENT_STATUS = ['Paid','Partial Payment','Pending','Overdue','Cancelled'];
+var BORDER_POSTS = ['Rubavu/Goma','Rusumo','Kagitumba','Kigali International Airport','Gatuna/Katuna','Nemba/Gasenyi','Cyangugu/Bukavu'];
+
+// Rwanda Royalty Rates (Law N°17/2014)
+var ROYALTY_RATES = {
+  'Gold': {rate:0.04, label:'Gold', unit:'troy oz', cat:'Precious Metals'},
+  'Coltan (Columbite-Tantalite)': {rate:0.04, label:'Coltan', unit:'kg', cat:'3TG Mineral'},
+  'Coltan': {rate:0.04, label:'Coltan', unit:'kg', cat:'3TG Mineral'},
+  'Cassiterite (Tin)': {rate:0.04, label:'Cassiterite', unit:'kg', cat:'3TG Mineral'},
+  'Cassiterite': {rate:0.04, label:'Cassiterite', unit:'kg', cat:'3TG Mineral'},
+  'Wolframite (Tungsten)': {rate:0.04, label:'Wolframite', unit:'kg', cat:'3TG Mineral'},
+  'Wolframite': {rate:0.04, label:'Wolframite', unit:'kg', cat:'3TG Mineral'},
+  'Gemstones (General)': {rate:0.06, label:'Gemstones', unit:'carat', cat:'Precious Stones'},
+  'Ruby': {rate:0.06, label:'Ruby', unit:'carat', cat:'Precious Stones'},
+  'Sapphire': {rate:0.06, label:'Sapphire', unit:'carat', cat:'Precious Stones'},
+  'Tourmaline': {rate:0.06, label:'Tourmaline', unit:'carat', cat:'Precious Stones'},
+  'Sand & Gravel': {rate:0.02, label:'Sand & Gravel', unit:'tonne', cat:'Construction'},
+  'Limestone': {rate:0.02, label:'Limestone', unit:'tonne', cat:'Construction'},
+  'Peat': {rate:0.02, label:'Peat', unit:'tonne', cat:'Industrial'},
+  'Lithium': {rate:0.04, label:'Lithium', unit:'kg', cat:'Battery Minerals'},
+  'Copper': {rate:0.04, label:'Copper', unit:'kg', cat:'Base Metals'},
+  'Beryllium': {rate:0.04, label:'Beryllium', unit:'kg', cat:'Industrial Minerals'},
+  'Niobium': {rate:0.04, label:'Niobium', unit:'kg', cat:'Industrial Minerals'},
+  'Amblygonite': {rate:0.04, label:'Amblygonite', unit:'kg', cat:'Industrial Minerals'},
+};
+
+// Corporate Tax (Rwanda)
+var CORPORATE_TAX = 0.30;
+var RMB_FEE_RATE = 0.005; // Rwanda Mines Board inspection fee approx
+
+// Simulated market prices
+var _prices = {
+  'Gold':       {val:2045.30, unit:'USD/troy oz', prev:2029.10, mineral:'Gold'},
+  'Coltan':     {val:96.50,   unit:'USD/lb',      prev:98.20,   mineral:'Coltan'},
+  'Cassiterite':{val:28.40,   unit:'USD/kg',      prev:28.10,   mineral:'Cassiterite (Tin)'},
+  'Wolframite': {val:35.80,   unit:'USD/kg',      prev:34.90,   mineral:'Wolframite (Tungsten)'},
+  'Lithium':    {val:17.60,   unit:'USD/kg',      prev:19.40,   mineral:'Lithium'},
+  'Copper':     {val:9.80,    unit:'USD/kg',      prev:9.65,    mineral:'Copper'},
+};
+var _priceLastUpdate = new Date();
+var _sparkData = {};
+(function initSparks(){
+  Object.keys(_prices).forEach(function(k){
+    var base=_prices[k].val;
+    _sparkData[k]=[];
+    for(var i=0;i<20;i++){
+      base=base*(0.995+Math.random()*0.01);
+      _sparkData[k].push(base);
+    }
+    _sparkData[k].push(_prices[k].val);
+  });
+})();
+
+// ══════════════════════════════════════════════════════════════
+// DATA STATE
+// ══════════════════════════════════════════════════════════════
+var _mdb = {
+  mines:[], batches:[], mprocessing:[], mlogistics:[],
+  mtransactions:[], mexports:[], mdocs:{}, oecdData:{}
+};
+var _currentView = 'dashboard';
+var _role = 'all';
+var _uploadQueue = [];
+var _oecdChecks = {};
+
+// ══════════════════════════════════════════════════════════════
+// PERSISTENCE
+// ══════════════════════════════════════════════════════════════
+function save(){try{localStorage.setItem('rmtp-v2',JSON.stringify(_mdb));}catch(e){}}
+function load(){try{var d=localStorage.getItem('rmtp-v2');if(d)_mdb=JSON.parse(d);}catch(e){}}
+
+// ══════════════════════════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════════════════════════
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+function today(){return new Date().toISOString().slice(0,10);}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function fmtNum(n,dec){return(+n||(+n===0?0:'')).toLocaleString('en-US',{minimumFractionDigits:dec||0,maximumFractionDigits:dec||0});}
+function fmtUSD(n){return'$'+fmtNum(+n,2);}
+function timeAgo(d){
+  if(!d)return'';
+  var diff=Math.floor((Date.now()-new Date(d))/86400000);
+  if(diff<1)return'Today';if(diff===1)return'Yesterday';if(diff<7)return diff+'d ago';
+  if(diff<30)return Math.floor(diff/7)+'w ago';
+  return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'2-digit'});
+}
+function notify(msg,type){
+  var n=document.getElementById('notif');
+  n.textContent=msg;
+  var styles={ok:'background:#0fa870;color:#0e1621;border-color:#0fa870',err:'background:#e03050;color:#fff;border-color:#e03050',warn:'background:#d96a10;color:#fff;border-color:#d96a10'};
+  n.style.cssText='position:fixed;top:16px;right:20px;z-index:999;padding:12px 20px;border-radius:9px;font-weight:700;font-size:13px;pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,.4);border:1px solid;'+styles[type||'ok'];
+  n.style.display='block';
+  setTimeout(function(){n.style.display='none';},3000);
+}
+function getVal(id){var el=document.getElementById(id);return el?el.value.trim():'';}
+function hashStr(s){
+  var h=0,i,c;
+  for(i=0;i<s.length;i++){c=s.charCodeAt(i);h=((h<<5)-h)+c;h|=0;}
+  var base=Math.abs(h).toString(16).padStart(8,'0');
+  var ts=Date.now().toString(16);
+  var rnd=Math.random().toString(16).slice(2,18);
+  return (base+ts+rnd).slice(0,64).padStart(64,'0');
+}
+function statusBadge(s){
+  var map={
+    'Active':'badge-ok','Under Review':'badge-warn','Suspended':'badge-err','Closed':'badge-muted',
+    'Exploration Phase':'badge-info','Development Phase':'badge-info',
+    'Exported':'badge-ok','Processing':'badge-info','In Transit':'badge-warn',
+    'Warehoused':'badge-muted','Sold':'badge-gold','Quarantined':'badge-err',
+    'Paid':'badge-ok','Partial Payment':'badge-warn','Pending':'badge-muted','Overdue':'badge-err','Cancelled':'badge-err'
+  };
+  return '<span class="badge '+(map[s]||'badge-muted')+'">'+esc(s)+'</span>';
+}
+function mineralColor(m){
+  var map={'Gold':'#c8890f','Coltan':'#7a5af8','Coltan (Columbite-Tantalite)':'#7a5af8','Cassiterite':'#1a8fef','Cassiterite (Tin)':'#1a8fef','Wolframite':'#e03050','Wolframite (Tungsten)':'#e03050','Lithium':'#0fa870','Copper':'#d96a10','Gemstones':'#ff6eb4','Mixed':'#546880'};
+  return map[m]||'#546880';
+}
+
+// ══════════════════════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════════════════════
+function setView(v){
+  _currentView=v;
+  document.querySelectorAll('.nav-item').forEach(function(el){el.classList.remove('active');});
+  var ni=document.getElementById('nav-'+v);if(ni)ni.classList.add('active');
+  document.querySelectorAll('.view').forEach(function(el){el.style.display='none';});
+  var vEl=document.getElementById('view-'+v);
+  if(vEl){vEl.style.display='block';}
+  var renders={
+    dashboard:renderDashboard, mines:renderMines, batches:renderBatches,
+    chain:renderChain, transactions:renderTransactions, prices:renderPrices,
+    calculator:renderCalculator, oecd:renderOECD, compliance:renderCompliance, export:renderExport
+  };
+  if(renders[v])renders[v]();
+  updateNavCounts();
+}
+
+function setRole(r){
+  _role=r;
+  var labels={all:'All Access',miner:'Miner / Cooperative',regulator:'Government / Regulator',buyer:'International Buyer'};
+  document.getElementById('role-display').textContent=labels[r]||r;
+}
+
+function updateNavCounts(){
+  var el=function(id){return document.getElementById(id);};
+  if(el('nc-mines'))el('nc-mines').textContent=_mdb.mines.length;
+  if(el('nc-batches'))el('nc-batches').textContent=_mdb.batches.length;
+  if(el('nc-txns'))el('nc-txns').textContent=_mdb.mtransactions.length;
+  var alerts=runSmartChecks();
+  if(el('nc-alerts'))el('nc-alerts').textContent=alerts.length;
+}
+
+function closeModal(id){document.getElementById(id).classList.remove('on');}
+function openModal(id){document.getElementById(id).classList.add('on');}
+
+// ══════════════════════════════════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════════════════════════════════
+function renderDashboard(){
+  var el=document.getElementById('view-dashboard');
+  var alerts=runSmartChecks();
+  var errCount=alerts.filter(function(a){return a.level==='error';}).length;
+  var warnCount=alerts.filter(function(a){return a.level==='warning';}).length;
+  var totalExportVal=_mdb.mexports.reduce(function(s,x){return s+(parseFloat(x.declaredValue)||0);},0);
+  var activeMines=_mdb.mines.filter(function(m){return m.status==='Active';}).length;
+
+  var h='';
+  h+='<div class="page-header">';
+  h+='<div><div class="page-title">Dashboard</div><div class="page-sub">Mining operations overview · Rwanda Mining Transparency Platform</div></div>';
+  h+='<div class="page-actions">';
+  h+='<button class="btn btn-secondary btn-sm" onclick="setView(\'prices\')">📈 Market Prices</button>';
+  h+='<button class="btn btn-primary btn-sm" onclick="openBatchModal()">+ New Passport</button>';
+  h+='</div></div>';
+
+  // KPI Row
+  h+='<div class="kpi-grid">';
+  h+=kpiCard('Active Mines',activeMines+' / '+_mdb.mines.length,'of '+_mdb.mines.length+' registered','#0fa870');
+  h+=kpiCard('Batch Passports',_mdb.batches.length,'mineral batches recorded','#1a8fef');
+  h+=kpiCard('Total Export Value','$'+fmtNum(totalExportVal,0),_mdb.mexports.length+' export declarations','#c8890f');
+  h+=kpiCard('Compliance Alerts',alerts.length,errCount+' errors · '+warnCount+' warnings',alerts.length===0?'#0fa870':errCount>0?'#e03050':'#d96a10');
+  h+='</div>';
+
+  h+='<div class="grid2">';
+
+  // Recent Batches
+  h+='<div class="card">';
+  h+='<div class="card-header"><span class="card-title">Recent Batch Passports</span><button class="btn btn-secondary btn-sm" onclick="setView(\'batches\')">View All</button></div>';
+  h+='<div style="padding:4px 0">';
+  if(_mdb.batches.length===0){
+    h+='<div style="padding:28px;text-align:center;color:var(--muted);font-size:13px">No batches recorded yet.<br><button class="btn btn-primary btn-sm" style="margin-top:12px" onclick="openBatchModal()">+ Register First Batch</button></div>';
+  } else {
+    _mdb.batches.slice(-5).reverse().forEach(function(b){
+      var mc=mineralColor(b.mineral);
+      h+='<div style="display:flex;align-items:center;gap:12px;padding:11px 20px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s" onclick="openDetailModal(\'batch\',\''+b.id+'\')" onmouseover="this.style.background=\'rgba(255,255,255,.025)\'" onmouseout="this.style.background=\'transparent\'">';
+      h+='<div style="width:10px;height:10px;border-radius:50%;background:'+mc+';flex-shrink:0"></div>';
+      h+='<div style="flex:1"><div style="font-size:13px;font-weight:600;color:var(--text)">'+esc(b.batchId)+'</div><div style="font-size:11px;color:var(--muted)">'+esc(b.mineral)+' · '+esc(b.weight)+'kg · '+esc(b.mineSite)+'</div></div>';
+      h+=statusBadge(b.status||'Registered');
+      h+='</div>';
+    });
+  }
+  h+='</div></div>';
+
+  // Top Prices
+  h+='<div class="card">';
+  h+='<div class="card-header"><span class="card-title">Current Market Prices</span><button class="btn btn-secondary btn-sm" onclick="setView(\'prices\')">Full Panel</button></div>';
+  h+='<div style="padding:4px 0">';
+  Object.keys(_prices).slice(0,5).forEach(function(k){
+    var p=_prices[k];
+    var chg=((p.val-p.prev)/p.prev*100);
+    var pos=chg>=0;
+    h+='<div style="display:flex;align-items:center;padding:11px 20px;border-bottom:1px solid var(--border)">';
+    h+='<div style="flex:1"><div style="font-size:13px;font-weight:600;color:var(--text)">'+esc(k)+'</div><div style="font-size:11px;color:var(--muted)">'+esc(p.unit)+'</div></div>';
+    h+='<div style="text-align:right"><div style="font-family:Syne,sans-serif;font-size:15px;font-weight:700;color:var(--text)">$'+fmtNum(p.val,2)+'</div>';
+    h+='<div style="font-size:11px;font-weight:600;color:'+(pos?'var(--emerald)':'var(--ruby)')+'">'+  (pos?'▲':'▼')+' '+Math.abs(chg).toFixed(2)+'%</div></div>';
+    h+='</div>';
+  });
+  h+='</div></div>';
+
+  h+='</div>'; // grid2
+
+  // Alerts summary
+  if(alerts.length>0){
+    h+='<div class="divider"><hr/><span>Active Compliance Alerts</span><hr/></div>';
+    alerts.slice(0,4).forEach(function(a){
+      h+=flagRow(a.level,a.code,a.message+(a.batchRef?' · Batch: '+a.batchRef:''));
+    });
+    if(alerts.length>4){
+      h+='<button class="btn btn-secondary btn-sm" onclick="setView(\'compliance\')" style="margin-top:8px">View all '+alerts.length+' alerts →</button>';
+    }
+  }
+
+  h+=pageFooter();
+  el.innerHTML=h;
+}
+
+function kpiCard(label,value,sub,color){
+  return '<div class="kpi-card" style="border-top:3px solid '+color+'">'
+    +'<div class="kpi-label">'+esc(label)+'</div>'
+    +'<div class="kpi-value" style="color:'+color+'">'+esc(String(value))+'</div>'
+    +(sub?'<div class="kpi-sub">'+esc(sub)+'</div>':'')
+    +'</div>';
+}
+
+function flagRow(level,code,msg){
+  var cls=level==='error'?'flag-err':level==='warning'?'flag-warn':'flag-ok';
+  var icon=level==='error'?'⚠':'▲';
+  if(level==='ok')icon='✓';
+  return '<div class="flag-row '+cls+'">'
+    +'<span class="flag-icon">'+icon+'</span>'
+    +'<div class="flag-content">'
+    +'<div class="flag-code">'+esc(code)+'</div>'
+    +'<div class="flag-msg">'+esc(msg)+'</div>'
+    +'</div></div>';
+}
+
+// ══════════════════════════════════════════════════════════════
+// MINE REGISTRY
+// ══════════════════════════════════════════════════════════════
+function renderMines(){
+  var el=document.getElementById('view-mines');
+  var h='<div class="page-header">';
+  h+='<div><div class="page-title">Mine Registry</div><div class="page-sub">Registered mine sites · Licenses · Regulatory status</div></div>';
+  h+='<button class="btn btn-primary" onclick="openMineModal()">+ Register Mine Site</button>';
+  h+='</div>';
+
+  // Stats
+  h+='<div class="kpi-grid">';
+  ['Active','Under Review','Suspended','Closed'].forEach(function(s){
+    var c=_mdb.mines.filter(function(m){return m.status===s;}).length;
+    var col={Active:'#0fa870','Under Review':'#d96a10',Suspended:'#e03050',Closed:'#4a6480'}[s];
+    h+=kpiCard(s.toUpperCase(),c,'mine sites',''+col);
+  });
+  h+='</div>';
+
+  if(_mdb.mines.length===0){
+    h+='<div class="empty-state"><div class="empty-icon">🏭</div><div class="empty-title">No Mine Sites Registered</div><div class="empty-text">Register mine sites with licenses, GPS coordinates,<br>EIA status, and regulatory details.</div><button class="btn btn-primary" onclick="openMineModal()">+ Register First Mine</button></div>';
+  } else {
+    // Mineral breakdown
+    h+='<div class="card" style="margin-bottom:20px">';
+    h+='<div class="card-header"><span class="card-title">Mine Sites Registry</span></div>';
+    h+='<div style="overflow-x:auto"><table class="data-table">';
+    h+='<thead><tr><th>Mine Name</th><th>Company</th><th>District</th><th>Mineral</th><th>License No.</th><th>License Expiry</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
+    _mdb.mines.forEach(function(m){
+      var expiry=m.licenseExpiry?new Date(m.licenseExpiry):null;
+      var expired=expiry&&expiry<new Date();
+      var nearExpiry=expiry&&!expired&&(expiry-new Date()<90*86400000);
+      h+='<tr onclick="openDetailModal(\'mine\',\''+m.id+'\')">';
+      h+='<td class="primary">'+esc(m.name)+'</td>';
+      h+='<td>'+esc(m.company||'—')+'</td>';
+      h+='<td>'+esc(m.location||'—')+'</td>';
+      h+='<td><span style="display:inline-flex;align-items:center;gap:5px"><span style="width:8px;height:8px;border-radius:50%;background:'+mineralColor(m.mineral||'')+'"></span>'+esc(m.mineral||'—')+'</span></td>';
+      h+='<td class="mono">'+esc(m.license||'—')+'</td>';
+      h+='<td style="color:'+(expired?'var(--ruby)':nearExpiry?'var(--amber)':'inherit')+'">'+esc(m.licenseExpiry||'—')+(expired?' ⚠':nearExpiry?' ⚠':'')+'</td>';
+      h+=statusBadge(m.status||'Active');
+      h+='<td onclick="event.stopPropagation()"><button class="btn btn-secondary btn-sm" onclick="openDetailModal(\'mine\',\''+m.id+'\')">View</button></td>';
+      h+='</tr>';
+    });
+    h+='</tbody></table></div></div>';
+  }
+  h+=pageFooter();
+  el.innerHTML=h;
+}
+
+function openMineModal(id){
+  document.getElementById('mine-modal-title').textContent=id?'Edit Mine Site':'Register Mine Site';
+  var m=id?_mdb.mines.find(function(x){return x.id===id;}):null;
+  var h='';
+  h+='<div class="form-grid">';
+  h+=ff('Mine Site Name','m-name','text','e.g. Rubavu Coltan Mine Alpha',m?m.name:'',true);
+  h+=ff('Operating Company','m-company','text','Company or cooperative name',m?m.company:'');
+  h+='</div><div class="form-grid">';
+  h+=ffSel('District / Location','m-location',RWANDAN_DISTRICTS,m?m.location:'');
+  h+=ffSel('Primary Mineral','m-mineral',MINE_MINERALS,m?m.mineral:'');
+  h+='</div><div class="form-grid">';
+  h+=ff('Mining License Number','m-license','text','e.g. RMB-LIC-2025-007',m?m.license:'');
+  h+=ff('License Expiry Date','m-licenseExpiry','date','',m?m.licenseExpiry:'');
+  h+='</div><div class="form-grid">';
+  h+=ff('Production Capacity (t/month)','m-capacity','number','',m?m.capacity:'');
+  h+=ffSel('Status','m-status',MINE_STATUS,m?m.status:'Active');
+  h+='</div><div class="form-grid">';
+  h+=ff('GPS Coordinates','m-gps','text','e.g. -1.9441, 30.0619',m?m.gps:'');
+  h+=ff('Regulatory Body','m-regulator','text','e.g. Rwanda Mines, Petroleum and Gas Board',m?m.regulator:'');
+  h+='</div>';
+  h+=ffArea('Environmental / EIA Notes','m-envNotes','EIA status, REMA compliance, environmental conditions…',m?m.envNotes:'');
+  h+='<div class="divider"><hr/><span>Document Upload</span><hr/></div>';
+  h+='<div style="font-size:12px;color:var(--muted);margin-bottom:10px">Mining License · EIA Report · Geological Survey · REMA Certificate</div>';
+  h+=docDropzone('mine-docs');
+  h+='<div class="modal-footer" style="margin:20px -24px -24px;padding:16px 24px">';
+  h+='<button class="btn btn-secondary" onclick="closeModal(\'modal-mine\')">Cancel</button>';
+  h+='<button class="btn btn-primary" onclick="submitMine(\''+(id||'')+'\')">'+( id?'Update Mine':'⬡ Register Mine Site')+'</button>';
+  h+='</div>';
+  document.getElementById('mine-modal-body').innerHTML=h;
+  initDocDrop('mine-docs');
+  openModal('modal-mine');
+}
+
+function submitMine(editId){
+  var name=getVal('m-name');
+  if(!name){notify('Mine name is required','err');return;}
+  var obj={
+    id:editId||uid(),date:today(),
+    name:name,company:getVal('m-company'),location:getVal('m-location'),
+    mineral:getVal('m-mineral'),license:getVal('m-license'),
+    licenseExpiry:getVal('m-licenseExpiry'),capacity:getVal('m-capacity'),
+    status:getVal('m-status'),gps:getVal('m-gps'),regulator:getVal('m-regulator'),
+    envNotes:getVal('m-envNotes')
+  };
+  attachDocs('mine-docs',obj.id);
+  if(editId){_mdb.mines=_mdb.mines.map(function(x){return x.id===editId?obj:x;});}
+  else{_mdb.mines.push(obj);}
+  save();closeModal('modal-mine');
+  notify('Mine site registered successfully','ok');
+  renderMines();updateNavCounts();
+}
+
+// ══════════════════════════════════════════════════════════════
+// BATCH PASSPORTS
+// ══════════════════════════════════════════════════════════════
+function renderBatches(){
+  var el=document.getElementById('view-batches');
+  var h='<div class="page-header">';
+  h+='<div><div class="page-title">Ore Batch Passports</div><div class="page-sub">Digital passports · SHA-256 hashing · Full traceability</div></div>';
+  h+='<div class="page-actions"><button class="btn btn-secondary" onclick="setView(\'chain\')">🔗 Chain View</button>';
+  h+='<button class="btn btn-primary" onclick="openBatchModal()">+ New Batch Passport</button></div>';
+  h+='</div>';
+
+  if(_mdb.batches.length===0){
+    h+='<div class="empty-state"><div class="empty-icon">📦</div><div class="empty-title">No Batch Passports Yet</div><div class="empty-text">Generate cryptographically-secured digital passports for each ore batch,<br>establishing traceability from mine to market.</div><button class="btn btn-primary" onclick="openBatchModal()">+ Generate First Passport</button></div>';
+  } else {
+    // Summary by mineral
+    h+='<div class="grid3" style="margin-bottom:20px">';
+    var mineralCount={};
+    _mdb.batches.forEach(function(b){var k=b.mineral||'Unknown';mineralCount[k]=(mineralCount[k]||0)+1;});
+    Object.keys(mineralCount).slice(0,3).forEach(function(k){
+      var mc=mineralColor(k);
+      h+='<div class="card" style="border-top:3px solid '+mc+'">';
+      h+='<div class="card-body" style="padding:16px 20px">';
+      h+='<div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">'+esc(k)+'</div>';
+      h+='<div style="font-family:Syne,sans-serif;font-size:24px;font-weight:700;color:'+mc+'">'+mineralCount[k]+'</div>';
+      h+='<div style="font-size:11px;color:var(--muted);margin-top:4px">batches registered</div>';
+      h+='</div></div>';
+    });
+    h+='</div>';
+
+    // Search/filter
+    h+='<div style="margin-bottom:14px;display:flex;gap:8px">';
+    h+='<input id="batch-search" type="text" placeholder="Search batch ID, mineral, mine…" oninput="filterBatches()" style="max-width:320px"/>';
+    h+='<select id="batch-mineral-filter" onchange="filterBatches()" style="width:auto">';
+    h+='<option value="">All Minerals</option>';
+    MINE_MINERALS.forEach(function(m){h+='<option>'+m+'</option>';});
+    h+='</select></div>';
+
+    h+='<div id="batch-list">';
+    _mdb.batches.slice().reverse().forEach(function(b){
+      h+=batchCard(b);
+    });
+    h+='</div>';
+  }
+  h+=pageFooter();
+  el.innerHTML=h;
+}
+
+function filterBatches(){
+  var q=(getVal('batch-search')||'').toLowerCase();
+  var mf=getVal('batch-mineral-filter')||'';
+  var list=document.getElementById('batch-list');
+  if(!list)return;
+  var html='';
+  _mdb.batches.slice().reverse().forEach(function(b){
+    var match=(!q||(b.batchId+b.mineral+b.mineSite+b.country).toLowerCase().indexOf(q)>-1);
+    var mineralMatch=(!mf||b.mineral===mf);
+    if(match&&mineralMatch)html+=batchCard(b);
+  });
+  list.innerHTML=html||'<div style="text-align:center;padding:40px;color:var(--muted)">No batches match your search.</div>';
+}
+
+function batchCard(b){
+  var mc=mineralColor(b.mineral);
+  return '<div class="passport-card" style="border-left-color:'+mc+'" onclick="openDetailModal(\'batch\',\''+b.id+'\')">'
+    +'<div style="display:flex;align-items:flex-start;justify-content:space-between">'
+    +'<div class="passport-id">'+esc(b.batchId)+'</div>'
+    +statusBadge(b.status||'Registered')
+    +'</div>'
+    +'<div class="passport-title" style="color:'+mc+'">'+esc(b.mineral)+'</div>'
+    +'<div class="passport-meta">'+esc(b.weight)+'kg · Purity '+esc(b.purity)+'% · '+esc(b.mineSite)+' · Extracted '+timeAgo(b.extractionDate)+'</div>'
+    +(b.hash?'<div class="passport-hash">SHA-256: '+esc(b.hash)+'</div>':'')
+    +'</div>';
+}
+
+function openBatchModal(){
+  var mineOpts=_mdb.mines.length?_mdb.mines.map(function(m){return m.name;}):['Register a mine site first'];
+  var h='';
+  h+='<div style="font-size:12px;font-weight:700;color:var(--emerald);letter-spacing:1px;margin-bottom:16px;text-transform:uppercase">◉ Country of Origin: Rwanda · Digital Passport Generation</div>';
+  h+='<div class="form-grid">';
+  h+=ffSel('Mineral Type','b-mineral',MINERALS,'');
+  h+=ffSel('Mine Site','b-mine',mineOpts,'');
+  h+='</div><div class="form-grid">';
+  h+=ff('Weight (kg)','b-weight','number','Total batch weight in kg','',true);
+  h+=ff('Purity Grade (%)','b-purity','number','Concentration / purity %','');
+  h+='</div><div class="form-grid">';
+  h+=ff('Extraction Date','b-extractionDate','date','','',true);
+  h+=ffSel('Country of Origin','b-country',COUNTRIES,'Rwanda');
+  h+='</div><div class="form-grid">';
+  h+=ff('Mining License Ref','b-licenseRef','text','e.g. RMB-2025-001','');
+  h+=ff('Inspector Name','b-inspector','text','Responsible inspector','');
+  h+='</div>';
+  h+=ffArea('Field Observations / Notes','b-notes','Describe extraction conditions, geology, observations…','');
+  h+='<div class="divider"><hr/><span>Document Upload</span><hr/></div>';
+  h+=docDropzone('batch-docs');
+  h+='<div class="divider"><hr/><span>Initial Chain Event</span><hr/></div>';
+  h+=ff('Event Description','b-chainEvent','text','e.g. Initial extraction at Site A, Level 3','');
+  h+='<div class="modal-footer" style="margin:20px -24px -24px;padding:16px 24px">';
+  h+='<button class="btn btn-secondary" onclick="closeModal(\'modal-batch\')">Cancel</button>';
+  h+='<button class="btn btn-primary" onclick="submitBatch()">◉ Generate Passport + Hash</button>';
+  h+='</div>';
+  document.getElementById('batch-modal-body').innerHTML=h;
+  initDocDrop('batch-docs');
+  openModal('modal-batch');
+}
+
+function submitBatch(){
+  var mineral=getVal('b-mineral');
+  var weight=getVal('b-weight');
+  var extDate=getVal('b-extractionDate');
+  if(!mineral||!weight||!extDate){notify('Mineral, weight and extraction date are required','err');return;}
+  var mine=getVal('b-mine');
+  var batchId='BATCH-'+mineral.split(' ')[0].toUpperCase().slice(0,3)+'-'+Date.now().toString(36).toUpperCase().slice(-6);
+  var chainEvent=getVal('b-chainEvent');
+  var chain=[];
+  if(chainEvent)chain.push({type:'Extraction',desc:chainEvent,date:extDate});
+  var obj={
+    id:uid(),date:today(),batchId:batchId,mineral:mineral,mineSite:mine,
+    weight:weight,purity:getVal('b-purity'),extractionDate:extDate,
+    country:getVal('b-country'),licenseRef:getVal('b-licenseRef'),
+    inspector:getVal('b-inspector'),notes:getVal('b-notes'),
+    status:'Registered',eventChain:chain
+  };
+  obj.hash=hashStr(JSON.stringify(obj));
+  attachDocs('batch-docs',obj.id);
+  _mdb.batches.push(obj);
+  save();closeModal('modal-batch');
+  notify('Batch passport generated: '+batchId,'ok');
+  renderBatches();updateNavCounts();
+}
+
+// ══════════════════════════════════════════════════════════════
+// CHAIN OF CUSTODY
+// ══════════════════════════════════════════════════════════════
+function renderChain(){
+  var el=document.getElementById('view-chain');
+  var h='<div class="page-header">';
+  h+='<div><div class="page-title">Chain of Custody</div><div class="page-sub">Processing · Logistics · Export · Full traceability per batch</div></div>';
+  h+='<div class="page-actions">';
+  h+='<button class="btn btn-secondary" onclick="openProcModal()">+ Processing</button>';
+  h+='<button class="btn btn-secondary" onclick="openLogisticsModal()">+ Transport</button>';
+  h+='<button class="btn btn-secondary" onclick="openExportDeclModal()">+ Export Declaration</button>';
+  h+='</div></div>';
+
+  if(_mdb.batches.length===0){
+    h+='<div class="empty-state"><div class="empty-icon">🔗</div><div class="empty-title">No Batches to Track</div><div class="empty-text">Register ore batches first, then add processing, transport and export steps to build the complete chain of custody.</div><button class="btn btn-primary" onclick="openBatchModal()">+ Create Batch Passport</button></div>';
+    el.innerHTML=h;return;
+  }
+
+  // Batch selector
+  h+='<div style="margin-bottom:20px;display:flex;gap:10px;align-items:center">';
+  h+='<label style="font-size:13px;font-weight:600;color:var(--text-dim)">Select Batch:</label>';
+  h+='<select id="chain-batch-sel" onchange="renderChainDetail()" style="max-width:400px">';
+  h+='<option value="">— Choose a batch —</option>';
+  _mdb.batches.slice().reverse().forEach(function(b){
+    h+='<option value="'+b.id+'">'+esc(b.batchId)+' · '+esc(b.mineral)+' · '+esc(b.weight)+'kg</option>';
+  });
+  h+='</select></div>';
+  h+='<div id="chain-detail"></div>';
+  h+=pageFooter();
+  el.innerHTML=h;
+}
+
+function renderChainDetail(){
+  var sel=document.getElementById('chain-batch-sel');
+  if(!sel)return;
+  var id=sel.value;
+  var detail=document.getElementById('chain-detail');
+  if(!id){detail.innerHTML='';return;}
+  var b=_mdb.batches.find(function(x){return x.id===id;});
+  if(!b){detail.innerHTML='';return;}
+
+  var mc=mineralColor(b.mineral);
+  var h='';
+  // Batch header
+  h+='<div class="card" style="margin-bottom:20px">';
+  h+='<div class="card-body">';
+  h+='<div style="display:flex;align-items:center;gap:16px">';
+  h+='<div style="width:48px;height:48px;border-radius:12px;background:'+mc+'18;border:2px solid '+mc+'44;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">📦</div>';
+  h+='<div style="flex:1"><div style="font-family:Syne,sans-serif;font-size:18px;font-weight:700;color:'+mc+'">'+esc(b.batchId)+'</div>';
+  h+='<div style="font-size:13px;color:var(--text-dim)">'+esc(b.mineral)+' · '+esc(b.weight)+'kg · Purity '+esc(b.purity)+'% · '+esc(b.mineSite)+'</div>';
+  h+='<div style="margin-top:6px">'+statusBadge(b.status||'Registered')+'</div>';
+  h+='</div>';
+  if(b.hash){
+    h+='<div style="text-align:right"><div style="font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.8px;margin-bottom:5px">SHA-256 HASH</div>';
+    h+='<div class="hash-box" style="font-size:9px;max-width:260px">'+esc(b.hash)+'</div></div>';
+  }
+  h+='</div></div></div>';
+
+  // Chain events
+  var allEvents=[];
+  if(b.eventChain&&b.eventChain.length){
+    b.eventChain.forEach(function(ev){allEvents.push({type:ev.type,desc:ev.desc,date:ev.date,src:'batch'});});
+  }
+  _mdb.mprocessing.filter(function(p){return p.batchRef===b.batchId;}).forEach(function(p){
+    allEvents.push({type:'Processing',desc:p.facility+' · '+p.method+' · In:'+p.inputWeight+'kg Out:'+p.outputWeight+'kg',date:p.date,src:'processing',id:p.id});
+  });
+  _mdb.mlogistics.filter(function(l){return l.batchRef===b.batchId;}).forEach(function(l){
+    allEvents.push({type:'Transport',desc:l.origin+' → '+l.destination+' · '+l.company+(l.sealNumber?' · Seal:'+l.sealNumber:''),date:l.departure,src:'logistics',id:l.id});
+  });
+  _mdb.mtransactions.filter(function(t){return t.batchRef===b.batchId;}).forEach(function(t){
+    allEvents.push({type:'Transaction',desc:t.seller+' → '+t.buyer+' · '+t.currency+' '+t.totalValue+' · Invoice:'+t.invoiceId,date:t.saleDate,src:'transaction',id:t.id});
+  });
+  _mdb.mexports.filter(function(x){return x.batchRef===b.batchId;}).forEach(function(x){
+    allEvents.push({type:'Export',desc:x.exporter+' → '+x.destination+' · Border:'+x.borderPost+(x.certIssued?' · ✓ Origin Cert':''),date:x.date,src:'export',id:x.id});
+  });
+
+  allEvents.sort(function(a,x){return(a.date||'')>(x.date||'')?1:-1;});
+
+  if(allEvents.length===0){
+    h+='<div style="text-align:center;padding:40px;color:var(--muted);font-size:13px">No chain events yet. Add processing, transport, or export steps above.</div>';
+  } else {
+    h+='<div class="divider"><hr/><span>Chain of Custody Timeline</span><hr/></div>';
+    var CHAIN_COLORS={Extraction:'#0fa870',Processing:'#1a8fef',Transport:'#d96a10',Warehoused:'#7a5af8',Transaction:'#c8890f',Export:'#0fa870'};
+    allEvents.forEach(function(ev,i){
+      var ec=CHAIN_COLORS[ev.type]||'#546880';
+      h+='<div class="chain-step">';
+      h+='<div class="chain-dot" style="border-color:'+ec+';background:'+ec+'18;color:'+ec+'">'+ev.type.charAt(0)+'</div>';
+      h+='<div class="chain-body">';
+      h+='<div class="chain-type" style="color:'+ec+'">'+esc(ev.type)+'</div>';
+      h+='<div class="chain-title">'+esc(ev.desc||'Event recorded')+'</div>';
+      h+='<div class="chain-date">'+esc(ev.date||'Date not specified')+'</div>';
+      h+='</div></div>';
+    });
+  }
+
+  // Update batch status
+  h+='<div class="divider"><hr/><span>Update Batch Status</span><hr/></div>';
+  h+='<div style="display:flex;gap:8px;flex-wrap:wrap">';
+  ['Registered','Processing','In Transit','Warehoused','Sold','Exported','Quarantined'].forEach(function(s){
+    var active=b.status===s;
+    h+='<button class="btn btn-sm '+(active?'btn-primary':'btn-secondary')+'" onclick="updateBatchStatus(\''+b.id+'\',\''+s+'\')">'+esc(s)+'</button>';
+  });
+  h+='</div>';
+
+  detail.innerHTML=h;
+}
+
+function updateBatchStatus(id,status){
+  var b=_mdb.batches.find(function(x){return x.id===id;});
+  if(b){b.status=status;save();renderChainDetail();notify('Batch status updated to '+status,'ok');}
+}
+
+function openProcModal(){
+  var batchOpts=_mdb.batches.length?_mdb.batches.map(function(b){return b.batchId;}):['Add batches first'];
+  var h='<div class="form-grid">';
+  h+=ffSel('Batch Reference','p-batchRef',batchOpts,'');
+  h+=ff('Processing Facility','p-facility','text','Facility name & location','');
+  h+='</div><div class="form-grid">';
+  h+=ffSel('Processing Method','p-method',PROCESS_METHODS,'');
+  h+=ff('Processing Date','p-date','date','','');
+  h+='</div><div class="form-grid">';
+  h+=ff('Input Weight (kg)','p-inputWeight','number','','');
+  h+=ff('Output Weight (kg)','p-outputWeight','number','','');
+  h+='</div><div class="form-grid">';
+  h+=ff('Output Purity (%)','p-outputPurity','number','','');
+  h+=ff('Recovery / Loss Factor (%)','p-lossFactor','number','','');
+  h+='</div>';
+  h+=ffArea('Processing Notes','p-notes','Processing observations, quality notes…','');
+  h+='<div class="divider"><hr/><span>Upload Documents</span><hr/></div>';
+  h+='<div style="font-size:12px;color:var(--muted);margin-bottom:10px">Processing Report · Quality Certificate · Lab Analysis</div>';
+  h+=docDropzone('proc-docs');
+  h+='<div class="modal-footer" style="margin:20px -24px -24px">';
+  h+='<button class="btn btn-secondary" onclick="closeModal(\'modal-proc\')">Cancel</button>';
+  h+='<button class="btn btn-primary" onclick="submitProcessing()">+ Record Processing Event</button>';
+  h+='</div>';
+  document.getElementById('proc-modal-body').innerHTML=h;
+  initDocDrop('proc-docs');openModal('modal-proc');
+}
+
+function submitProcessing(){
+  var batchRef=getVal('p-batchRef');
+  if(!batchRef||batchRef==='Add batches first'){notify('Select a batch reference','err');return;}
+  var obj={
+    id:uid(),date:today(),batchRef:batchRef,facility:getVal('p-facility'),
+    method:getVal('p-method'),date:getVal('p-date')||today(),
+    inputWeight:getVal('p-inputWeight'),outputWeight:getVal('p-outputWeight'),
+    outputPurity:getVal('p-outputPurity'),lossFactor:getVal('p-lossFactor'),
+    notes:getVal('p-notes')
+  };
+  attachDocs('proc-docs',obj.id);
+  _mdb.mprocessing.push(obj);
+  // Add to batch chain
+  var b=_mdb.batches.find(function(x){return x.batchId===batchRef;});
+  if(b){b.eventChain=b.eventChain||[];b.eventChain.push({type:'Processing',desc:obj.facility+' · '+obj.method,date:obj.date});}
+  save();closeModal('modal-proc');
+  notify('Processing event recorded','ok');
+  setView('chain');
+}
+
+function openLogisticsModal(){
+  var batchOpts=_mdb.batches.length?_mdb.batches.map(function(b){return b.batchId;}):['Add batches first'];
+  var h='<div class="form-grid">';
+  h+=ffSel('Batch Reference','l-batchRef',batchOpts,'');
+  h+=ff('Transport Company','l-company','text','','');
+  h+='</div><div class="form-grid">';
+  h+=ff('Vehicle / Truck ID','l-truckId','text','','');
+  h+=ff('Driver Name','l-driver','text','','');
+  h+='</div><div class="form-grid">';
+  h+=ff('Origin (Departure)','l-origin','text','','');
+  h+=ff('Destination','l-destination','text','','');
+  h+='</div><div class="form-grid">';
+  h+=ff('Departure Date','l-departure','date','','');
+  h+=ff('Arrival Date','l-arrival','date','','');
+  h+='</div><div class="form-grid">';
+  h+=ff('Sealed Weight (kg)','l-sealWeight','number','','');
+  h+=ff('Seal Number','l-sealNumber','text','Official seal reference','');
+  h+='</div>';
+  h+=ffArea('Route Notes / Waypoints','l-routeNotes','Route description, customs checkpoints…','');
+  h+='<div class="divider"><hr/><span>Upload Documents</span><hr/></div>';
+  h+='<div style="font-size:12px;color:var(--muted);margin-bottom:10px">Waybill · Transport Permit · Weigh Bridge Certificate · Customs Transit Document</div>';
+  h+=docDropzone('log-docs');
+  h+='<div class="modal-footer" style="margin:20px -24px -24px">';
+  h+='<button class="btn btn-secondary" onclick="closeModal(\'modal-logistics\')">Cancel</button>';
+  h+='<button class="btn btn-primary" onclick="submitLogistics()">+ Record Transport Event</button>';
+  h+='</div>';
+  document.getElementById('logistics-modal-body').innerHTML=h;
+  initDocDrop('log-docs');openModal('modal-logistics');
+}
+
+function submitLogistics(){
+  var batchRef=getVal('l-batchRef');
+  if(!batchRef||batchRef==='Add batches first'){notify('Select a batch reference','err');return;}
+  var obj={
+    id:uid(),date:today(),batchRef:batchRef,company:getVal('l-company'),
+    truckId:getVal('l-truckId'),driver:getVal('l-driver'),
+    origin:getVal('l-origin'),destination:getVal('l-destination'),
+    departure:getVal('l-departure'),arrival:getVal('l-arrival'),
+    sealWeight:getVal('l-sealWeight'),sealNumber:getVal('l-sealNumber'),
+    routeNotes:getVal('l-routeNotes')
+  };
+  attachDocs('log-docs',obj.id);
+  _mdb.mlogistics.push(obj);
+  var b=_mdb.batches.find(function(x){return x.batchId===batchRef;});
+  if(b){b.eventChain=b.eventChain||[];b.eventChain.push({type:'Transport',desc:obj.origin+' → '+obj.destination,date:obj.departure});}
+  save();closeModal('modal-logistics');
+  notify('Transport event recorded','ok');
+  setView('chain');
+}
+
+// ══════════════════════════════════════════════════════════════
+// TRANSACTIONS
+// ══════════════════════════════════════════════════════════════
+function renderTransactions(){
+  var el=document.getElementById('view-transactions');
+  var h='<div class="page-header">';
+  h+='<div><div class="page-title">Transactions &amp; Invoices</div><div class="page-sub">Financial records · Buyer-seller · Payment tracking</div></div>';
+  h+='<button class="btn btn-primary" onclick="openTxnModal()">+ New Transaction</button>';
+  h+='</div>';
+
+  if(_mdb.mtransactions.length===0){
+    h+='<div class="empty-state"><div class="empty-icon">💳</div><div class="empty-title">No Transactions Recorded</div><div class="empty-text">Record mineral sale transactions, invoices and payment status<br>linked to batch passports.</div><button class="btn btn-primary" onclick="openTxnModal()">+ Record First Transaction</button></div>';
+  } else {
+    var totalPaid=_mdb.mtransactions.filter(function(t){return t.paymentStatus==='Paid';}).reduce(function(s,t){return s+(+t.totalValue||0);},0);
+    var totalPending=_mdb.mtransactions.filter(function(t){return t.paymentStatus==='Pending';}).reduce(function(s,t){return s+(+t.totalValue||0);},0);
+    h+='<div class="kpi-grid">';
+    h+=kpiCard('TOTAL TRANSACTIONS',_mdb.mtransactions.length,'across all batches','#1a8fef');
+    h+=kpiCard('PAID','$'+fmtNum(totalPaid,0),_mdb.mtransactions.filter(function(t){return t.paymentStatus==='Paid';}).length+' invoices','#0fa870');
+    h+=kpiCard('PENDING','$'+fmtNum(totalPending,0),_mdb.mtransactions.filter(function(t){return t.paymentStatus==='Pending';}).length+' invoices','#d96a10');
+    h+=kpiCard('OVERDUE',_mdb.mtransactions.filter(function(t){return t.paymentStatus==='Overdue';}).length,'invoices requiring attention','#e03050');
+    h+='</div>';
+
+    h+='<div class="card" style="overflow:hidden">';
+    h+='<div class="card-header"><span class="card-title">Transaction Ledger</span></div>';
+    h+='<div style="overflow-x:auto"><table class="data-table">';
+    h+='<thead><tr><th>Invoice ID</th><th>Batch Ref</th><th>Seller</th><th>Buyer</th><th>Value</th><th>Sale Date</th><th>Payment Status</th><th>Actions</th></tr></thead><tbody>';
+    _mdb.mtransactions.slice().reverse().forEach(function(t){
+      h+='<tr onclick="openDetailModal(\'transaction\',\''+t.id+'\')">';
+      h+='<td class="mono">'+esc(t.invoiceId||t.id.slice(0,8))+'</td>';
+      h+='<td><span style="color:var(--emerald);font-family:JetBrains Mono,monospace;font-size:11px">'+esc(t.batchRef||'—')+'</span></td>';
+      h+='<td>'+esc((t.seller||'').slice(0,20))+'</td>';
+      h+='<td>'+esc((t.buyer||'').slice(0,20))+'</td>';
+      h+='<td><strong style="color:var(--gold-light)">'+esc(t.currency||'USD')+' '+fmtNum(t.totalValue,2)+'</strong></td>';
+      h+='<td>'+esc(t.saleDate||'—')+'</td>';
+      h+=statusBadge(t.paymentStatus||'Pending');
+      h+='<td onclick="event.stopPropagation()"><button class="btn btn-secondary btn-sm" onclick="openDetailModal(\'transaction\',\''+t.id+'\')">View</button></td>';
+      h+='</tr>';
+    });
+    h+='</tbody></table></div></div>';
+  }
+  h+=pageFooter();
+  el.innerHTML=h;
+}
+
+function openTxnModal(){
+  var batchOpts=_mdb.batches.length?_mdb.batches.map(function(b){return b.batchId;}):['Add batches first'];
+  var invId='INV-'+Date.now().toString(36).toUpperCase().slice(-8);
+  var h='<div class="form-grid">';
+  h+=ff('Invoice ID','t-invoiceId','text','Auto-generated',invId);
+  h+=ffSel('Batch Reference','t-batchRef',batchOpts,'');
+  h+='</div><div class="form-grid">';
+  h+=ff('Seller Name / Entity','t-seller','text','','',true);
+  h+=ff('Buyer Name / Entity','t-buyer','text','','',true);
+  h+='</div><div class="form-grid">';
+  h+=ff('Quantity (kg)','t-quantity','number','','');
+  h+=ff('Price Per Unit','t-unitPrice','number','Price per kg/unit','');
+  h+='</div><div class="form-grid">';
+  h+=ff('Total Value','t-totalValue','number','','',true);
+  h+=ffSel('Currency','t-currency',CURRENCIES,'USD');
+  h+='</div><div class="form-grid">';
+  h+=ff('Sale Date','t-saleDate','date','','');
+  h+=ffSel('Payment Status','t-paymentStatus',PAYMENT_STATUS,'Pending');
+  h+='</div>';
+  h+=ff('Payment Terms','t-paymentTerms','text','e.g. Net 30, Letter of Credit, CAD','');
+  h+=ffArea('Notes','t-notes','Additional transaction notes, reference numbers…','');
+  h+='<div class="divider"><hr/><span>Upload Documents</span><hr/></div>';
+  h+='<div style="font-size:12px;color:var(--muted);margin-bottom:10px">Invoice · Purchase Order · Bank Transfer Confirmation · Letter of Credit</div>';
+  h+=docDropzone('txn-docs');
+  h+='<div class="modal-footer" style="margin:20px -24px -24px">';
+  h+='<button class="btn btn-secondary" onclick="closeModal(\'modal-transaction\')">Cancel</button>';
+  h+='<button class="btn btn-primary" onclick="submitTransaction()">+ Record Transaction</button>';
+  h+='</div>';
+  document.getElementById('txn-modal-body').innerHTML=h;
+  initDocDrop('txn-docs');openModal('modal-transaction');
+}
+
+function submitTransaction(){
+  var seller=getVal('t-seller');var buyer=getVal('t-buyer');var total=getVal('t-totalValue');
+  if(!seller||!buyer||!total){notify('Seller, buyer and total value are required','err');return;}
+  var obj={
+    id:uid(),date:today(),invoiceId:getVal('t-invoiceId'),batchRef:getVal('t-batchRef'),
+    seller:seller,buyer:buyer,quantity:getVal('t-quantity'),unitPrice:getVal('t-unitPrice'),
+    totalValue:total,currency:getVal('t-currency'),saleDate:getVal('t-saleDate'),
+    paymentStatus:getVal('t-paymentStatus'),paymentTerms:getVal('t-paymentTerms'),notes:getVal('t-notes')
+  };
+  attachDocs('txn-docs',obj.id);
+  _mdb.mtransactions.push(obj);
+  var b=_mdb.batches.find(function(x){return x.batchId===obj.batchRef;});
+  if(b){b.eventChain=b.eventChain||[];b.eventChain.push({type:'Transaction',desc:'Invoice '+obj.invoiceId+' · '+obj.currency+' '+obj.totalValue,date:obj.saleDate});}
+  save();closeModal('modal-transaction');
+  notify('Transaction recorded: '+obj.invoiceId,'ok');
+  renderTransactions();updateNavCounts();
+}
+
+function openExportDeclModal(){
+  var batchOpts=_mdb.batches.length?_mdb.batches.map(function(b){return b.batchId;}):['Add batches first'];
+  var h='<div class="form-grid">';
+  h+=ffSel('Batch Reference','ed-batchRef',batchOpts,'');
+  h+=ff('Exporter Name / Entity','ed-exporter','text','','',true);
+  h+='</div><div class="form-grid">';
+  h+=ff('Destination Country','ed-destination','text','','',true);
+  h+=ff('Declared Value (USD)','ed-declaredValue','number','','');
+  h+='</div><div class="form-grid">';
+  h+=ffSel('Border Post / Point of Exit','ed-borderPost',BORDER_POSTS,'');
+  h+=ff('Customs Reference No.','ed-customsRef','text','','');
+  h+='</div><div class="form-grid">';
+  h+=ff('Export Date','ed-date','date','','');
+  h+=ff('ICGLR Certificate No.','ed-icglrRef','text','ICGLR Regional Certificate if applicable','');
+  h+='</div>';
+  h+='<div class="form-row">';
+  h+='<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--text-dim)">';
+  h+='<input type="checkbox" id="ed-certIssued" style="width:16px;height:16px;accent-color:var(--emerald)"/>';
+  h+='Origin Certificate Issued &amp; Verified</label></div>';
+  h+=ffArea('Notes / Description','ed-notes','Cargo description, weight breakdown, special conditions…','');
+  h+='<div class="divider"><hr/><span>Upload Documents</span><hr/></div>';
+  h+='<div style="font-size:12px;color:var(--muted);margin-bottom:10px">Export Permit · Customs Declaration · Origin Certificate · ICGLR Certificate</div>';
+  h+=docDropzone('exp-docs');
+  h+='<div class="modal-footer" style="margin:20px -24px -24px">';
+  h+='<button class="btn btn-secondary" onclick="closeModal(\'modal-export-decl\')">Cancel</button>';
+  h+='<button class="btn btn-primary" onclick="submitExportDecl()">+ Register Export Declaration</button>';
+  h+='</div>';
+  document.getElementById('export-decl-modal-body').innerHTML=h;
+  initDocDrop('exp-docs');openModal('modal-export-decl');
+}
+
+function submitExportDecl(){
+  var exporter=getVal('ed-exporter');var dest=getVal('ed-destination');
+  if(!exporter||!dest){notify('Exporter and destination are required','err');return;}
+  var certEl=document.getElementById('ed-certIssued');
+  var obj={
+    id:uid(),date:getVal('ed-date')||today(),batchRef:getVal('ed-batchRef'),
+    exporter:exporter,destination:dest,declaredValue:getVal('ed-declaredValue'),
+    borderPost:getVal('ed-borderPost'),customsRef:getVal('ed-customsRef'),
+    icglrRef:getVal('ed-icglrRef'),certIssued:certEl?certEl.checked:false,
+    notes:getVal('ed-notes')
+  };
+  attachDocs('exp-docs',obj.id);
+  _mdb.mexports.push(obj);
+  var b=_mdb.batches.find(function(x){return x.batchId===obj.batchRef;});
+  if(b){
+    b.status='Exported';
+    b.eventChain=b.eventChain||[];
+    b.eventChain.push({type:'Export',desc:obj.exporter+' → '+obj.destination,date:obj.date});
+  }
+  save();closeModal('modal-export-decl');
+  notify('Export declaration registered','ok');
+  renderTransactions();updateNavCounts();
+}
+
+// ══════════════════════════════════════════════════════════════
+// MARKET PRICES
+// ══════════════════════════════════════════════════════════════
+function renderPrices(){
+  var el=document.getElementById('view-prices');
+  var lastUpdate=_priceLastUpdate.toLocaleTimeString();
+  var h='<div class="page-header">';
+  h+='<div><div class="page-title">Market Prices</div><div class="page-sub">Indicative commodity prices · Simulated live feed · Last updated: '+lastUpdate+'</div></div>';
+  h+='<div class="page-actions">';
+  h+='<button class="btn btn-secondary" onclick="setView(\'calculator\')">🧮 Royalty Calculator</button>';
+  h+='<button class="btn btn-primary" onclick="refreshPrices()">↻ Refresh Prices</button>';
+  h+='</div></div>';
+
+  // Disclaimer
+  h+='<div style="background:var(--amber-bg);border:1px solid rgba(217,106,16,.3);border-radius:8px;padding:12px 16px;font-size:12px;color:var(--amber);margin-bottom:20px">';
+  h+='⚠ Indicative prices for reference only. Prices are simulated based on approximate current market conditions. For official pricing, consult LME, USGS, or your commodity broker.';
+  h+='</div>';
+
+  // RWF Rate
+  var rwfRate=1285;
+  h+='<div class="price-grid">';
+  Object.keys(_prices).forEach(function(k){
+    var p=_prices[k];
+    var chg=(p.val-p.prev)/p.prev*100;
+    var pos=chg>=0;
+    var sparks=_sparkData[k]||[];
+    var sparkMin=Math.min.apply(null,sparks);
+    var sparkMax=Math.max.apply(null,sparks);
+    var sparkRange=sparkMax-sparkMin||1;
+    var sparkPts=sparks.map(function(v,i){return[(i/(sparks.length-1)*160),(1-((v-sparkMin)/sparkRange))*36];});
+    var sparkPath=sparkPts.map(function(pt,i){return(i===0?'M':'L')+pt[0].toFixed(1)+' '+pt[1].toFixed(1);}).join(' ');
+    h+='<div class="price-card">';
+    h+='<div style="display:flex;justify-content:space-between;align-items:flex-start">';
+    h+='<div><div class="price-mineral">'+esc(k)+'</div>';
+    h+='<div class="price-val">$'+fmtNum(p.val,2)+'</div>';
+    h+='<div class="price-unit">'+esc(p.unit)+'</div>';
+    h+='<div class="price-change '+(pos?'pos':'neg')+'">';
+    h+=(pos?'▲':'▼')+' '+Math.abs(chg).toFixed(2)+'% vs prev close';
+    h+='</div>';
+    h+='<div style="font-size:11px;color:var(--muted);margin-top:6px">≈ RWF '+fmtNum(p.val*rwfRate,0)+' / unit</div>';
+    h+='</div>';
+    h+='<svg class="price-sparkline" width="160" height="36" viewBox="0 0 160 36">';
+    h+='<path d="'+sparkPath+'" fill="none" stroke="'+(pos?'var(--emerald)':'var(--ruby)')+'" stroke-width="1.5" stroke-linecap="round"/>';
+    h+='</svg></div>';
+    // Mini royalty
+    var rr=ROYALTY_RATES[p.mineral||k]||ROYALTY_RATES[k];
+    if(rr){
+      h+='<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:11px;color:var(--muted)">';
+      h+='Rwanda Royalty Rate: <strong style="color:var(--text-dim)">'+(rr.rate*100)+'%</strong> · Est. royalty/unit: <strong style="color:var(--gold-light)">$'+fmtNum(p.val*rr.rate,2)+'</strong>';
+      h+='</div>';
+    }
+    h+='</div>';
+  });
+  h+='</div>';
+
+  // Comparison table
+  h+='<div class="card">';
+  h+='<div class="card-header"><span class="card-title">Price Comparison &amp; Royalty Reference Table</span></div>';
+  h+='<div style="overflow-x:auto"><table class="data-table">';
+  h+='<thead><tr><th>Mineral</th><th>Price</th><th>Unit</th><th>24h Change</th><th>Royalty Rate</th><th>Est. Royalty/Unit</th><th>RWF Equivalent</th></tr></thead><tbody>';
+  Object.keys(_prices).forEach(function(k){
+    var p=_prices[k];
+    var chg=(p.val-p.prev)/p.prev*100;
+    var pos=chg>=0;
+    var rr=ROYALTY_RATES[p.mineral||k]||ROYALTY_RATES[k];
+    h+='<tr>';
+    h+='<td class="primary">'+esc(k)+'</td>';
+    h+='<td><strong>$'+fmtNum(p.val,2)+'</strong></td>';
+    h+='<td style="color:var(--muted)">'+esc(p.unit)+'</td>';
+    h+='<td style="color:'+(pos?'var(--emerald)':'var(--ruby)')+';font-weight:600">'+(pos?'▲':'▼')+' '+Math.abs(chg).toFixed(2)+'%</td>';
+    h+='<td>'+( rr?(rr.rate*100)+'%':'—')+'</td>';
+    h+='<td style="color:var(--gold-light)">'+( rr?'$'+fmtNum(p.val*rr.rate,2):'—')+'</td>';
+    h+='<td style="color:var(--muted)">RWF '+fmtNum(p.val*rwfRate,0)+'</td>';
+    h+='</tr>';
+  });
+  h+='</tbody></table></div></div>';
+  h+=pageFooter();
+  el.innerHTML=h;
+}
+
+function refreshPrices(){
+  Object.keys(_prices).forEach(function(k){
+    var p=_prices[k];
+    p.prev=p.val;
+    var change=(Math.random()-0.48)*0.025;
+    p.val=Math.max(0.01,p.val*(1+change));
+    _sparkData[k]=_sparkData[k]||[];
+    _sparkData[k].push(p.val);
+    if(_sparkData[k].length>21)_sparkData[k].shift();
+  });
+  _priceLastUpdate=new Date();
+  renderPrices();
+  notify('Prices refreshed','ok');
+}
+
+// ══════════════════════════════════════════════════════════════
+// ROYALTY CALCULATOR
+// ══════════════════════════════════════════════════════════════
+function renderCalculator(){
+  var el=document.getElementById('view-calculator');
+  var h='<div class="page-header">';
+  h+='<div><div class="page-title">Royalty &amp; Tax Calculator</div><div class="page-sub">Rwanda Mining Royalties · Law N°17/2014 · Corporate Tax · RMB Fees</div></div></div>';
+
+  h+='<div class="calc-panel">';
+  // Left: Inputs
+  h+='<div>';
+  h+='<div style="font-family:Syne,sans-serif;font-size:15px;font-weight:700;color:var(--text);margin-bottom:16px">Input Parameters</div>';
+  h+='<div class="form-row">'+ffSel('Mineral / Resource','rc-mineral',MINERALS,'Gold')+'</div>';
+  h+='<div class="form-grid" style="margin-bottom:14px">';
+  h+=ff('Production Volume','rc-volume','number','e.g. 100','');
+  h+=ff('Market Price (USD/unit)','rc-price','number','Auto from market panel','');
+  h+='</div>';
+  h+='<div class="form-row"><label class="form-label">Mining Type</label>';
+  h+='<div style="display:flex;gap:8px;margin-top:6px">';
+  h+='<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;color:var(--text-dim);padding:8px 14px;border:1px solid var(--border);border-radius:6px"><input type="radio" name="rc-type" value="industrial" checked style="accent-color:var(--emerald)"> Industrial</label>';
+  h+='<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;color:var(--text-dim);padding:8px 14px;border:1px solid var(--border);border-radius:6px"><input type="radio" name="rc-type" value="asm" style="accent-color:var(--emerald)"> Artisanal (ASM)</label>';
+  h+='</div></div>';
+  h+='<div style="margin-top:14px;display:flex;gap:8px">';
+  h+='<button class="btn btn-secondary" onclick="autoFillPrice()">↻ Use Market Price</button>';
+  h+='<button class="btn btn-primary" onclick="calculateRoyalty()">Calculate</button>';
+  h+='</div>';
+
+  // Rwanda royalty reference
+  h+='<div style="margin-top:20px;padding:14px;background:var(--raised);border-radius:9px;border:1px solid var(--border)">';
+  h+='<div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.8px;text-transform:uppercase;margin-bottom:10px">Rwanda Royalty Rates Reference</div>';
+  h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:12px">';
+  [['3TG Minerals (Coltan, Cassiterite, Wolframite)','4%'],['Gold','4%'],['Gemstones','6%'],['Base Metals (Copper, etc.)','4%'],['Construction Minerals','2%'],['Industrial Minerals','3%']].forEach(function(row){
+    h+='<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border)">';
+    h+='<span style="color:var(--text-dim)">'+esc(row[0])+'</span>';
+    h+='<strong style="color:var(--gold-light)">'+esc(row[1])+'</strong></div>';
+  });
+  h+='</div>';
+  h+='<div style="margin-top:8px;font-size:11px;color:var(--muted)">Corporate Income Tax: 30% · ASM Cooperatives: reduced rates may apply. RMB Fee: ~0.5%</div>';
+  h+='</div></div>';
+
+  // Right: Results
+  h+='<div>';
+  h+='<div style="font-family:Syne,sans-serif;font-size:15px;font-weight:700;color:var(--text);margin-bottom:16px">Calculation Results</div>';
+  h+='<div id="calc-results" style="background:var(--raised);border:1px solid var(--border);border-radius:9px;padding:20px">';
+  h+='<div style="text-align:center;padding:30px;color:var(--muted);font-size:13px">Enter parameters and click <strong>Calculate</strong> to see royalty and tax breakdown.</div>';
+  h+='</div>';
+  h+='</div>';
+  h+='</div>'; // calc-panel
+
+  h+=pageFooter();
+  el.innerHTML=h;
+}
+
+function autoFillPrice(){
+  var mineral=getVal('rc-mineral');
+  var priceEl=document.getElementById('rc-price');
+  if(!priceEl)return;
+  var keys=Object.keys(_prices);
+  for(var i=0;i<keys.length;i++){
+    var k=keys[i];
+    if(mineral.toLowerCase().indexOf(k.toLowerCase())>-1||k.toLowerCase().indexOf(mineral.split(' ')[0].toLowerCase())>-1){
+      priceEl.value=_prices[k].val.toFixed(2);
+      notify('Market price loaded: $'+_prices[k].val.toFixed(2)+' '+_prices[k].unit,'ok');
+      return;
+    }
+  }
+  notify('No market price found for this mineral. Enter manually.','warn');
+}
+
+function calculateRoyalty(){
+  var mineral=getVal('rc-mineral');
+  var volume=parseFloat(getVal('rc-volume'))||0;
+  var price=parseFloat(getVal('rc-price'))||0;
+  var typeEls=document.querySelectorAll('input[name="rc-type"]');
+  var mineType='industrial';
+  typeEls.forEach(function(el){if(el.checked)mineType=el.value;});
+
+  if(volume<=0||price<=0){notify('Enter production volume and market price','err');return;}
+
+  var rr=ROYALTY_RATES[mineral];
+  if(!rr){
+    // Default
+    rr={rate:0.04,label:mineral,cat:'General'};
+  }
+
+  var grossValue=volume*price;
+  var royaltyRate=mineType==='asm'?Math.min(rr.rate,0.01):rr.rate; // ASM: 1% max
+  var royaltyAmt=grossValue*royaltyRate;
+  var rmbFee=grossValue*RMB_FEE_RATE;
+  var preIncomeTax=grossValue-royaltyAmt-rmbFee;
+  var corporateTax=mineType==='asm'?preIncomeTax*0.0:preIncomeTax*CORPORATE_TAX; // simplified
+  var netRevenue=preIncomeTax-corporateTax;
+
+  var res=document.getElementById('calc-results');
+  if(!res)return;
+  var h='';
+  h+='<div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.8px;text-transform:uppercase;margin-bottom:14px">'+esc(mineral)+' · '+fmtNum(volume,2)+' units @ $'+fmtNum(price,2)+'</div>';
+  function rrow(label,val,cls,note){
+    return '<div class="calc-result-row">'
+      +'<div><div class="calc-result-label">'+esc(label)+'</div>'+(note?'<div style="font-size:11px;color:var(--muted)">'+esc(note)+'</div>':'')+'</div>'
+      +'<div class="calc-result-val '+(cls||'')+'">'+fmtUSD(val)+'</div>'
+      +'</div>';
+  }
+  h+=rrow('Gross Production Value',grossValue,'');
+  h+=rrow('Mining Royalty ('+( royaltyRate*100).toFixed(1)+'%)',-royaltyAmt,'tax',mineType==='asm'?'ASM rate applied':'Law N°17/2014');
+  h+=rrow('RMB Inspection Fee (0.5%)',-rmbFee,'tax','Rwanda Mines Board');
+  h+=rrow('Pre-Tax Revenue',preIncomeTax,'accent','');
+  if(mineType==='industrial'){
+    h+=rrow('Corporate Income Tax (30%)',-corporateTax,'tax','Rwanda CIT simplified');
+  } else {
+    h+='<div class="calc-result-row"><div><div class="calc-result-label">Corporate Tax</div><div style="font-size:11px;color:var(--muted)">ASM cooperative - reduced rate</div></div><div class="calc-result-val" style="color:var(--emerald)">$0.00</div></div>';
+  }
+  h+='<div class="calc-result-row total"><div class="calc-result-label">NET REVENUE</div><div class="calc-result-val" style="color:var(--gold-light)">'+fmtUSD(netRevenue)+'</div></div>';
+  h+='<div style="margin-top:14px;padding:10px;background:var(--surface);border-radius:7px;font-size:11px;color:var(--muted);line-height:1.7">';
+  h+='Effective Tax Rate: <strong style="color:var(--text-dim)">'+(((grossValue-netRevenue)/grossValue)*100).toFixed(1)+'%</strong> &nbsp;|&nbsp; ';
+  h+='Total Govt. Revenue: <strong style="color:var(--text-dim)">'+fmtUSD(royaltyAmt+rmbFee+corporateTax)+'</strong>';
+  h+='</div>';
+  res.innerHTML=h;
+}
+
+// ══════════════════════════════════════════════════════════════
+// OECD DUE DILIGENCE
+// ══════════════════════════════════════════════════════════════
+var OECD_STEPS = [
+  {
+    num:1, title:'Establish Strong Company Management Systems',
+    sub:'Company policy · Supply chain management · Internal controls',
+    checks:[
+      'Adopt and communicate a supply chain policy for minerals from CAHRAs',
+      'Structure internal management to support supply chain due diligence',
+      'Establish a system of controls and transparency over the mineral supply chain',
+      'Strengthen company engagement with suppliers',
+      'Establish a company-level grievance mechanism as an early-warning risk-awareness system'
+    ]
+  },
+  {
+    num:2, title:'Identify and Assess Risks in the Supply Chain',
+    sub:'Red flags · Risk mapping · CAHRA identification',
+    checks:[
+      'Map the supply chain to the extent possible',
+      'Identify and assess risks of adverse impacts using the risk framework in the Guidance',
+      'Identify Red Flags in the supply chain and verify absence of conflict financing',
+      'Consult ICGLR, UN Group of Experts and other risk resources',
+      'Document all risk assessment findings and conclusions'
+    ]
+  },
+  {
+    num:3, title:'Design and Implement a Strategy to Respond to Identified Risks',
+    sub:'Risk response · Supplier engagement · Remediation',
+    checks:[
+      'Report findings to designated senior management within the company',
+      'Devise a risk management plan with measurable targets and timelines',
+      'Implement the risk management plan and monitor performance',
+      'Engage with suppliers to build their capacity if needed',
+      'Consider disengagement from a supplier as a last resort'
+    ]
+  },
+  {
+    num:4, title:'Carry Out Independent Third-Party Audit',
+    sub:'Third-party verification · Audit standards · Accreditation',
+    checks:[
+      'Engage an accredited third-party audit firm',
+      'Audit covers relevant supply chain actors',
+      'Audit conducted in accordance with OECD guidance and relevant industry standards',
+      'Audit results documented and disclosed to relevant stakeholders',
+      'Respond to audit findings with corrective actions'
+    ]
+  },
+  {
+    num:5, title:'Report Annually on Supply Chain Due Diligence',
+    sub:'Public reporting · Transparency · Stakeholder communication',
+    checks:[
+      'Publish an annual report on due diligence policies and practices',
+      'Disclose supply chain due diligence information on company website',
+      'Report to relevant industry schemes and initiatives (e.g. iTSCi, RCM)',
+      'Communicate due diligence information to downstream buyers',
+      'File relevant reports with regulators (RMB, RDB, REMA)'
+    ]
+  }
+];
+
+function renderOECD(){
+  var el=document.getElementById('view-oecd');
+  var h='<div class="page-header">';
+  h+='<div><div class="page-title">OECD Due Diligence Framework</div><div class="page-sub">Responsible Supply Chains · Conflict Minerals · 3TG (Tin, Tantalum, Tungsten, Gold)</div></div>';
+  h+='<div class="page-actions">';
+  h+='<button class="btn btn-secondary" onclick="setView(\'compliance\')">View Alerts</button>';
+  h+='<button class="btn btn-gold" onclick="generateOECDReport()">📋 Generate Report</button>';
+  h+='</div></div>';
+
+  // Header card
+  h+='<div class="card" style="margin-bottom:20px;border-top:3px solid var(--sapphire)">';
+  h+='<div class="card-body">';
+  h+='<div style="display:flex;gap:16px;align-items:flex-start">';
+  h+='<div style="font-size:32px">📋</div>';
+  h+='<div><div style="font-family:Syne,sans-serif;font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px">OECD Guidance for Responsible Supply Chains of Minerals from Conflict-Affected and High-Risk Areas (CAHRAs)</div>';
+  h+='<div style="font-size:13px;color:var(--text-dim);line-height:1.7">This framework helps companies comply with global due diligence standards for 3TG minerals: <strong>Tin</strong> (cassiterite), <strong>Tantalum</strong> (coltan), <strong>Tungsten</strong> (wolframite), and <strong>Gold</strong>. Rwanda is classified as a conflict-affected and high-risk area by many international standards.</div>';
+  h+='</div></div></div></div>';
+
+  // Company info
+  h+='<div class="card" style="margin-bottom:20px">';
+  h+='<div class="card-header"><span class="card-title">Company Information</span></div>';
+  h+='<div class="card-body"><div class="form-grid">';
+  h+=ff('Company / Cooperative Name','oecd-company','text','','');
+  h+=ff('Registration Number','oecd-regNo','text','RDB Registration No.','');
+  h+='</div><div class="form-grid">';
+  h+=ff('Reporting Period','oecd-period','text','e.g. 2025','2025');
+  h+=ff('Responsible Officer','oecd-officer','text','Name and title','');
+  h+='</div></div></div>';
+
+  // 5 Steps
+  var savedChecks=_oecdChecks||{};
+  OECD_STEPS.forEach(function(step){
+    var stepKey='step'+step.num;
+    var checkeds=savedChecks[stepKey]||[];
+    var doneCount=checkeds.length;
+    var totalCount=step.checks.length;
+    var pct=Math.round(doneCount/totalCount*100);
+    var isDone=doneCount===totalCount;
+    var isInProgress=doneCount>0&&!isDone;
+    h+='<div class="oecd-step '+(isDone?'done':isInProgress?'in-progress':'')+'" id="oecd-step-'+step.num+'">';
+    h+='<div class="oecd-step-header" onclick="toggleOECDStep('+step.num+')">';
+    h+='<div class="oecd-step-num">'+step.num+'</div>';
+    h+='<div style="flex:1"><div class="oecd-step-title">'+esc(step.title)+'</div>';
+    h+='<div class="oecd-step-sub">'+esc(step.sub)+'</div></div>';
+    h+='<div style="text-align:right;flex-shrink:0">';
+    h+='<div style="font-size:11px;font-weight:700;color:'+(isDone?'var(--emerald)':isInProgress?'var(--amber)':'var(--muted)')+'">'+doneCount+'/'+totalCount+' completed</div>';
+    h+='<div class="pbar" style="width:120px;margin-left:auto;margin-top:5px"><div class="pbar-fill" style="width:'+pct+'%;background:'+(isDone?'var(--emerald)':isInProgress?'var(--amber)':'var(--muted)')+'"></div></div>';
+    h+='</div>';
+    h+='<span style="color:var(--muted);font-size:14px;margin-left:10px">'+(isInProgress||isDone?'▾':'▸')+'</span>';
+    h+='</div>';
+    h+='<div class="oecd-step-body" id="oecd-body-'+step.num+'">';
+    step.checks.forEach(function(chk,idx){
+      var checkId='oecd-'+step.num+'-'+idx;
+      var isChecked=checkeds.indexOf(idx)>-1;
+      h+='<div class="oecd-check">';
+      h+='<input type="checkbox" id="'+checkId+'" '+(isChecked?'checked':'')+' onchange="saveOECDCheck('+step.num+','+idx+',this.checked)"/>';
+      h+='<label for="'+checkId+'">'+esc(chk)+'</label>';
+      h+='</div>';
+    });
+    h+='</div></div>';
+  });
+
+  // Risk assessment section
+  h+='<div class="card" style="margin-top:20px">';
+  h+='<div class="card-header"><span class="card-title">Risk Assessment Notes</span></div>';
+  h+='<div class="card-body">';
+  h+=ffArea('Supply Chain Risk Notes','oecd-riskNotes','Describe identified risks, red flags, and mitigation measures…','');
+  h+='<div style="margin-top:10px;display:flex;gap:8px">';
+  h+='<button class="btn btn-secondary" onclick="saveOECDNotes()">Save Notes</button>';
+  h+='<button class="btn btn-gold" onclick="generateOECDReport()">📋 Generate Full Report</button>';
+  h+='</div></div></div>';
+
+  h+=pageFooter();
+  el.innerHTML=h;
+
+  // Restore saved values
+  var rn=document.getElementById('oecd-riskNotes');
+  if(rn&&_mdb.oecdData&&_mdb.oecdData.riskNotes)rn.value=_mdb.oecdData.riskNotes;
+  var co=document.getElementById('oecd-company');
+  if(co&&_mdb.oecdData&&_mdb.oecdData.company)co.value=_mdb.oecdData.company;
+}
+
+function toggleOECDStep(n){
+  var body=document.getElementById('oecd-body-'+n);
+  if(!body)return;
+  var stepEl=document.getElementById('oecd-step-'+n);
+  if(body.style.display==='block'){body.style.display='none';stepEl.classList.remove('open');}
+  else{body.style.display='block';stepEl.classList.add('open');}
+}
+
+function saveOECDCheck(step,idx,checked){
+  _oecdChecks['step'+step]=_oecdChecks['step'+step]||[];
+  var arr=_oecdChecks['step'+step];
+  if(checked){if(arr.indexOf(idx)<0)arr.push(idx);}
+  else{_oecdChecks['step'+step]=arr.filter(function(x){return x!==idx;});}
+  _mdb.oecdData=_mdb.oecdData||{};
+  _mdb.oecdData.checks=_oecdChecks;
+  save();
+  // Update step progress display
+  renderOECD();
+  // Re-open the step
+  var body=document.getElementById('oecd-body-'+step);
+  if(body){body.style.display='block';var stepEl=document.getElementById('oecd-step-'+step);if(stepEl)stepEl.classList.add('open');}
+}
+
+function saveOECDNotes(){
+  _mdb.oecdData=_mdb.oecdData||{};
+  _mdb.oecdData.riskNotes=getVal('oecd-riskNotes');
+  _mdb.oecdData.company=getVal('oecd-company');
+  _mdb.oecdData.regNo=getVal('oecd-regNo');
+  _mdb.oecdData.period=getVal('oecd-period');
+  _mdb.oecdData.officer=getVal('oecd-officer');
+  save();notify('OECD notes saved','ok');
+}
+
+function generateOECDReport(){
+  var company=getVal('oecd-company')||(_mdb.oecdData&&_mdb.oecdData.company)||'[Company Name]';
+  var period=getVal('oecd-period')||(_mdb.oecdData&&_mdb.oecdData.period)||new Date().getFullYear();
+  var officer=getVal('oecd-officer')||(_mdb.oecdData&&_mdb.oecdData.officer)||'[Responsible Officer]';
+  var riskNotes=getVal('oecd-riskNotes')||(_mdb.oecdData&&_mdb.oecdData.riskNotes)||'No risk notes recorded.';
+
+  var totalChecks=OECD_STEPS.reduce(function(s,st){return s+st.checks.length;},0);
+  var completedChecks=0;
+  OECD_STEPS.forEach(function(st){completedChecks+=(_oecdChecks['step'+st.num]||[]).length;});
+  var pct=Math.round(completedChecks/totalChecks*100);
+
+  var h='';
+  h+='<div style="border:2px solid var(--sapphire);border-radius:10px;padding:20px;margin-bottom:20px">';
+  h+='<div style="font-family:Syne,sans-serif;font-size:18px;font-weight:800;color:var(--text);margin-bottom:6px">OECD Due Diligence Report</div>';
+  h+='<div style="font-size:13px;color:var(--text-dim)">Company: <strong>'+esc(company)+'</strong> · Period: <strong>'+esc(String(period))+'</strong> · Officer: <strong>'+esc(officer)+'</strong></div>';
+  h+='<div style="margin-top:12px;display:flex;align-items:center;gap:12px">';
+  h+='<div class="pbar" style="flex:1"><div class="pbar-fill" style="width:'+pct+'%;background:var(--sapphire)"></div></div>';
+  h+='<div style="font-size:13px;font-weight:700;color:var(--sapphire)">'+pct+'% Complete ('+completedChecks+'/'+totalChecks+' checks)</div>';
+  h+='</div></div>';
+
+  OECD_STEPS.forEach(function(step){
+    var checkeds=_oecdChecks['step'+step.num]||[];
+    var isDone=checkeds.length===step.checks.length;
+    h+='<div style="margin-bottom:16px">';
+    h+='<div style="font-family:Syne,sans-serif;font-size:13px;font-weight:700;color:'+(isDone?'var(--emerald)':'var(--text)')+';margin-bottom:8px">';
+    h+='Step '+step.num+': '+esc(step.title)+' · '+(isDone?'<span class="badge badge-ok">Complete</span>':'<span class="badge badge-warn">'+checkeds.length+'/'+step.checks.length+' done</span>');
+    h+='</div>';
+    step.checks.forEach(function(chk,idx){
+      var done=checkeds.indexOf(idx)>-1;
+      h+='<div style="display:flex;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px;color:var(--text-dim)">';
+      h+='<span style="color:'+(done?'var(--emerald)':'var(--muted)')+';">'+(done?'✓':'○')+'</span>';
+      h+=esc(chk);
+      h+='</div>';
+    });
+    h+='</div>';
+  });
+
+  h+='<div style="margin-top:16px;padding:14px;background:var(--raised);border-radius:8px">';
+  h+='<div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">Risk Assessment Notes</div>';
+  h+='<div style="font-size:13px;color:var(--text-dim);line-height:1.7">'+esc(riskNotes)+'</div>';
+  h+='</div>';
+
+  h+='<div style="margin-top:16px;padding:14px;background:var(--raised);border-radius:8px">';
+  h+='<div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">Mine &amp; Batch Summary</div>';
+  h+='<div style="font-size:13px;color:var(--text-dim)">Registered Mine Sites: '+_mdb.mines.length+' · Batch Passports: '+_mdb.batches.length+' · Transactions: '+_mdb.mtransactions.length+' · Export Declarations: '+_mdb.mexports.length+'</div>';
+  h+='</div>';
+
+  document.getElementById('oecd-report-body').innerHTML=h;
+  openModal('modal-oecd-report');
+
+  // Store report data for download
+  window._oecdReportData={company:company,period:period,officer:officer,riskNotes:riskNotes,pct:pct,completedChecks:completedChecks,totalChecks:totalChecks};
+}
+
+function downloadOECDReport(){
+  var d=window._oecdReportData||{};
+  var lines=['═'.repeat(70),'OECD DUE DILIGENCE REPORT','Rwanda Mining Transparency Platform · RMTP','Company: '+(d.company||''),'Reporting Period: '+(d.period||''),'Responsible Officer: '+(d.officer||''),'Generated: '+new Date().toLocaleString(),'═'.repeat(70),'','COMPLIANCE STATUS: '+(d.pct||0)+'% Complete ('+( d.completedChecks||0)+'/'+( d.totalChecks||0)+' checks)',''];
+  OECD_STEPS.forEach(function(step){
+    var checkeds=_oecdChecks['step'+step.num]||[];
+    lines.push('STEP '+step.num+': '+step.title);
+    lines.push('Status: '+checkeds.length+'/'+step.checks.length+' completed');
+    step.checks.forEach(function(chk,idx){
+      lines.push('  '+(checkeds.indexOf(idx)>-1?'[✓]':'[ ]')+' '+chk);
+    });
+    lines.push('');
+  });
+  lines.push('RISK ASSESSMENT NOTES','');
+  lines.push(d.riskNotes||'No notes.');
+  lines.push('','MINE & BATCH SUMMARY','');
+  lines.push('Mine Sites: '+_mdb.mines.length,'Batch Passports: '+_mdb.batches.length,'Transactions: '+_mdb.mtransactions.length,'Export Declarations: '+_mdb.mexports.length);
+  lines.push('','═'.repeat(70),'Generated by RMTP · ASC & Associates Ltd. · Jimmÿ Gasana · :WANDAHILL:','© All Rights Reserved','═'.repeat(70));
+  downloadTxt(lines.join('\n'),'OECD-Due-Diligence-Report-'+(d.period||new Date().getFullYear())+'.txt');
+}
+
+// ══════════════════════════════════════════════════════════════
+// COMPLIANCE & ALERTS
+// ══════════════════════════════════════════════════════════════
+function renderCompliance(){
+  var el=document.getElementById('view-compliance');
+  var alerts=runSmartChecks();
+  var errors=alerts.filter(function(a){return a.level==='error';});
+  var warnings=alerts.filter(function(a){return a.level==='warning';});
+
+  var h='<div class="page-header">';
+  h+='<div><div class="page-title">Compliance &amp; Alerts</div><div class="page-sub">Smart verification · Anomaly detection · License monitoring</div></div>';
+  h+='<button class="btn btn-secondary btn-sm" onclick="renderCompliance()">↻ Refresh</button>';
+  h+='</div>';
+
+  h+='<div class="kpi-grid">';
+  h+=kpiCard('TOTAL ALERTS',alerts.length,'across all records',alerts.length===0?'#0fa870':errors.length>0?'#e03050':'#d96a10');
+  h+=kpiCard('CRITICAL ERRORS',errors.length,'require immediate action',errors.length>0?'#e03050':'#0fa870');
+  h+=kpiCard('WARNINGS',warnings.length,'review recommended','#d96a10');
+  var expiredLicenses=_mdb.mines.filter(function(m){return m.licenseExpiry&&new Date(m.licenseExpiry)<new Date();}).length;
+  h+=kpiCard('EXPIRED LICENSES',expiredLicenses,'mine site licenses',''+( expiredLicenses>0?'#e03050':'#0fa870'));
+  h+='</div>';
+
+  if(alerts.length===0&&expiredLicenses===0){
+    h+='<div class="flag-row flag-ok"><span class="flag-icon">✓</span><div class="flag-content"><div class="flag-code">ALL CLEAR</div><div class="flag-msg">No compliance issues detected. All records pass verification checks.</div></div></div>';
+  }
+
+  if(errors.length>0){
+    h+='<div class="divider"><hr/><span>Critical Errors</span><hr/></div>';
+    errors.forEach(function(a){h+=flagRow('error',a.code,a.message+(a.batchRef?' · Batch: '+a.batchRef:''));});
+  }
+  if(warnings.length>0){
+    h+='<div class="divider"><hr/><span>Warnings</span><hr/></div>';
+    warnings.forEach(function(a){h+=flagRow('warning',a.code,a.message+(a.batchRef?' · Batch: '+a.batchRef:''));});
+  }
+
+  // License expiry check
+  var now=new Date();
+  var near=[];
+  var expired=[];
+  _mdb.mines.forEach(function(m){
+    if(m.licenseExpiry){
+      var exp=new Date(m.licenseExpiry);
+      if(exp<now)expired.push(m);
+      else if(exp-now<90*86400000)near.push(m);
+    }
+  });
+  if(expired.length||near.length){
+    h+='<div class="divider"><hr/><span>License Expiry Monitor</span><hr/></div>';
+    expired.forEach(function(m){
+      h+=flagRow('error','LICENSE EXPIRED',m.name+' · License: '+(m.license||'N/A')+' · Expired: '+m.licenseExpiry);
+    });
+    near.forEach(function(m){
+      var days=Math.ceil((new Date(m.licenseExpiry)-now)/86400000);
+      h+=flagRow('warning','LICENSE EXPIRING SOON',m.name+' · Expires in '+days+' days · '+m.licenseExpiry);
+    });
+  }
+
+  // OECD summary
+  var totalChecks=OECD_STEPS.reduce(function(s,st){return s+st.checks.length;},0);
+  var completedChecks=OECD_STEPS.reduce(function(s,st){return s+(_oecdChecks['step'+st.num]||[]).length;},0);
+  var oecdPct=Math.round(completedChecks/totalChecks*100);
+  h+='<div class="divider"><hr/><span>OECD Compliance Status</span><hr/></div>';
+  h+='<div class="flag-row '+(oecdPct===100?'flag-ok':oecdPct>50?'flag-warn':'flag-err')+'">';
+  h+='<span class="flag-icon">'+(oecdPct===100?'✓':'▲')+'</span>';
+  h+='<div class="flag-content"><div class="flag-code">OECD DUE DILIGENCE</div>';
+  h+='<div class="flag-msg">'+oecdPct+'% of required checks completed ('+completedChecks+'/'+totalChecks+'). ';
+  h+=oecdPct<100?'<button class="btn btn-secondary btn-sm" onclick="setView(\'oecd\')" style="margin-left:8px">Complete Framework →</button>':'All 5 steps fully completed.';
+  h+='</div></div></div>';
+
+  h+=pageFooter();
+  el.innerHTML=h;
+}
+
+function runSmartChecks(){
+  var alerts=[];
+  _mdb.batches.forEach(function(b){
+    // Pre-extraction sale check
+    _mdb.mtransactions.forEach(function(t){
+      if(t.batchRef===b.batchId&&b.extractionDate&&t.saleDate&&t.saleDate<b.extractionDate){
+        alerts.push({level:'error',code:'PRE-EXTRACTION SALE',message:'Transaction dated before extraction date',batchRef:b.batchId});
+      }
+    });
+    // Exported without transport
+    var hasTransport=_mdb.mlogistics.some(function(l){return l.batchRef===b.batchId;});
+    if(b.status==='Exported'&&!hasTransport){
+      alerts.push({level:'error',code:'MISSING TRANSPORT RECORD',message:'Batch marked Exported but no transport record found',batchRef:b.batchId});
+    }
+    // Exported without export declaration
+    if(b.status==='Exported'){
+      var hasExport=_mdb.mexports.some(function(x){return x.batchRef===b.batchId;});
+      if(!hasExport)alerts.push({level:'error',code:'MISSING EXPORT DECLARATION',message:'Status is Exported but no export declaration on record',batchRef:b.batchId});
+      var hasCert=_mdb.mexports.some(function(x){return x.batchRef===b.batchId&&x.certIssued;});
+      if(!hasCert)alerts.push({level:'warning',code:'NO ORIGIN CERTIFICATE',message:'Exported without verified origin certificate',batchRef:b.batchId});
+    }
+    // Invoice without batch reference
+    _mdb.mtransactions.filter(function(t){return t.batchRef===b.batchId;}).forEach(function(t){
+      if(!t.batchRef)alerts.push({level:'warning',code:'INVOICE WITHOUT BATCH',message:'Invoice '+t.invoiceId+' has no batch reference',batchRef:b.batchId});
+    });
+  });
+  // Transactions with no batch
+  _mdb.mtransactions.forEach(function(t){
+    if(!t.batchRef||!_mdb.batches.find(function(b){return b.batchId===t.batchRef;})){
+      alerts.push({level:'warning',code:'UNLINKED TRANSACTION',message:'Invoice '+( t.invoiceId||t.id.slice(0,8))+' references unknown or missing batch'});
+    }
+  });
+  return alerts;
+}
+
+// ══════════════════════════════════════════════════════════════
+// EXPORT
+// ══════════════════════════════════════════════════════════════
+function renderExport(){
+  var el=document.getElementById('view-export');
+  var h='<div class="page-header">';
+  h+='<div><div class="page-title">Export Reports</div><div class="page-sub">Generate reports for regulators, auditors, buyers and government</div></div></div>';
+
+  var scopes=[
+    {id:'full',icon:'📦',title:'Full Mining Intelligence Export',desc:'All mines, batches, processing, logistics, transactions, exports and compliance alerts. For internal audit and complete review.',audience:'Internal / Auditors'},
+    {id:'batches',icon:'📋',title:'Batch Passports & Chain of Custody',desc:'All ore batch digital passports with SHA-256 hashes and full chain of custody. For international buyers and customs authorities.',audience:'International Buyers / Customs'},
+    {id:'transactions',icon:'💳',title:'Transaction & Financial Records',desc:'All invoices, payment records and financial transactions. For RRA tax authority and financial auditors.',audience:'RRA / Financial Auditors'},
+    {id:'compliance',icon:'⚠️',title:'Compliance & Alert Report',desc:'All verification flags, license expiry warnings and anomalies. For Rwanda Mines Board, REMA and oversight bodies.',audience:'Regulators / RMB / REMA'},
+    {id:'exports-only',icon:'✈️',title:'Export Declarations & Certificates',desc:'Export records, customs references and origin certificates only. For customs, border control and destination country regulators.',audience:'Customs / Border Control'},
+    {id:'oecd',icon:'📋',title:'OECD Due Diligence Report',desc:'Full 5-step OECD compliance framework report. For international business chambers, ESG reporting and responsible sourcing programs.',audience:'ICC / ESG / Buyers'},
+  ];
+
+  h+='<div class="grid2">';
+  scopes.forEach(function(s){
+    h+='<div class="card" style="cursor:pointer;transition:all .15s" onclick="runExport(\''+s.id+'\')" onmouseover="this.style.borderColor=\'var(--emerald)\'" onmouseout="this.style.borderColor=\'var(--border)\'">';
+    h+='<div class="card-body">';
+    h+='<div style="display:flex;gap:12px;align-items:flex-start">';
+    h+='<div style="font-size:28px;flex-shrink:0">'+s.icon+'</div>';
+    h+='<div style="flex:1">';
+    h+='<div style="font-family:Syne,sans-serif;font-size:14px;font-weight:700;color:var(--text);margin-bottom:5px">'+esc(s.title)+'</div>';
+    h+='<div style="font-size:12px;color:var(--text-dim);line-height:1.6;margin-bottom:8px">'+esc(s.desc)+'</div>';
+    h+='<div style="display:flex;justify-content:space-between;align-items:center">';
+    h+='<span class="badge badge-info" style="font-size:10px">'+esc(s.audience)+'</span>';
+    h+='<button class="btn btn-primary btn-sm">⬇ Export TXT</button>';
+    h+='</div>';
+    h+='</div></div></div></div>';
+  });
+  h+='</div>';
+  h+=pageFooter();
+  el.innerHTML=h;
+}
+
+function runExport(type){
+  var lines=[];
+  var sep='═'.repeat(70);
+  var now=new Date().toLocaleString();
+  lines.push(sep,'RWANDA MINING TRANSPARENCY PLATFORM · RMTP','ASC & Associates Ltd. · Jimmÿ Gasana · :WANDAHILL:','Generated: '+now,sep,'');
+
+  if(type==='full'){
+    lines.push('FULL MINING INTELLIGENCE EXPORT','');
+    lines.push('MINE SITES ('+_mdb.mines.length+')','');
+    _mdb.mines.forEach(function(m){lines.push('  '+m.name+' · '+m.mineral+' · '+m.location+' · License: '+m.license+' · Status: '+m.status);});
+    lines.push('','BATCH PASSPORTS ('+_mdb.batches.length+')','');
+    _mdb.batches.forEach(function(b){lines.push('  '+b.batchId+' · '+b.mineral+' · '+b.weight+'kg · '+b.mineSite+' · '+( b.status||''));});
+    lines.push('','TRANSACTIONS ('+_mdb.mtransactions.length+')','');
+    _mdb.mtransactions.forEach(function(t){lines.push('  '+( t.invoiceId||t.id)+' · '+t.batchRef+' · '+t.currency+' '+t.totalValue+' · '+t.paymentStatus);});
+    var alerts=runSmartChecks();
+    lines.push('','COMPLIANCE ALERTS ('+alerts.length+')','');
+    if(alerts.length===0)lines.push('  No alerts detected.');
+    else alerts.forEach(function(a){lines.push('  ['+a.level.toUpperCase()+'] '+a.code+': '+a.message);});
+  } else if(type==='batches'){
+    lines.push('BATCH PASSPORTS & CHAIN OF CUSTODY','');
+    _mdb.batches.forEach(function(b){
+      lines.push('BATCH: '+b.batchId,'Mineral: '+b.mineral,'Mine: '+b.mineSite,'Weight: '+b.weight+'kg','Purity: '+b.purity+'%','Extracted: '+b.extractionDate,'Status: '+(b.status||''),'Hash: '+(b.hash||''),'');
+      if(b.eventChain&&b.eventChain.length){
+        lines.push('Chain of Custody:');
+        b.eventChain.forEach(function(ev,i){lines.push('  '+(i+1)+'. ['+ev.type+'] '+ev.desc+' · '+ev.date);});
+      }
+      lines.push(sep,'');
+    });
+  } else if(type==='transactions'){
+    lines.push('TRANSACTION & FINANCIAL RECORDS','');
+    _mdb.mtransactions.forEach(function(t){
+      lines.push('Invoice: '+(t.invoiceId||t.id),'Batch Ref: '+(t.batchRef||'None'),'Seller: '+t.seller,'Buyer: '+t.buyer,'Value: '+t.currency+' '+t.totalValue,'Sale Date: '+(t.saleDate||''),'Status: '+(t.paymentStatus||''),'');
+    });
+  } else if(type==='compliance'){
+    lines.push('COMPLIANCE & ALERT REPORT','');
+    var alerts=runSmartChecks();
+    if(alerts.length===0)lines.push('STATUS: ALL CLEAR - No compliance issues detected.');
+    else{
+      lines.push('ALERTS DETECTED: '+alerts.length,'');
+      alerts.forEach(function(a){lines.push('['+a.level.toUpperCase()+'] '+a.code,'Message: '+a.message,(a.batchRef?'Batch: '+a.batchRef:''),'');});
+    }
+    lines.push('','LICENSE STATUS','');
+    _mdb.mines.forEach(function(m){
+      var exp=m.licenseExpiry?new Date(m.licenseExpiry):null;
+      var status=exp?(exp<new Date()?'EXPIRED':exp-new Date()<90*86400000?'EXPIRING SOON':'VALID'):'UNKNOWN';
+      lines.push('  '+m.name+' · '+m.license+' · Expiry: '+(m.licenseExpiry||'N/A')+' · '+status);
+    });
+  } else if(type==='exports-only'){
+    lines.push('EXPORT DECLARATIONS','');
+    _mdb.mexports.forEach(function(x){
+      lines.push('Batch Ref: '+(x.batchRef||''),'Exporter: '+x.exporter,'Destination: '+x.destination,'Border Post: '+(x.borderPost||''),'Customs Ref: '+(x.customsRef||''),'Date: '+(x.date||''),'Origin Cert: '+(x.certIssued?'YES':'NO'),'');
+    });
+  } else if(type==='oecd'){
+    return generateOECDReport();
+  }
+
+  lines.push(sep,'RMTP · ASC & Associates Ltd. · Jimmÿ Gasana · :WANDAHILL:','© Copyright Jimmÿ Gasana · All Rights Reserved',sep);
+  downloadTxt(lines.join('\n'),'RMTP-'+type.toUpperCase()+'-'+new Date().toISOString().slice(0,10)+'.txt');
+  notify('Export generated and downloaded','ok');
+}
+
+// ══════════════════════════════════════════════════════════════
+// DETAIL MODAL
+// ══════════════════════════════════════════════════════════════
+function openDetailModal(type,id){
+  var keyMap={mine:'mines',batch:'batches',processing:'mprocessing',logistics:'mlogistics',transaction:'mtransactions',export:'mexports'};
+  var key=keyMap[type];
+  var item=key?(_mdb[key]||[]).find(function(x){return x.id===id;}):null;
+  if(!item)return;
+  var labels={mine:'Mine Site',batch:'Batch Passport',processing:'Processing Record',logistics:'Transport Record',transaction:'Transaction',export:'Export Declaration'};
+  document.getElementById('detail-modal-title').textContent=labels[type]||type;
+
+  var h='';
+  // Hero
+  var titleKey=type==='mine'?'name':type==='batch'?'batchId':type==='transaction'?'invoiceId':'id';
+  var heroColor={mine:'var(--emerald)',batch:'var(--sapphire)',transaction:'var(--gold)',export:'var(--emerald)'}[type]||'var(--text)';
+  h+='<div style="background:var(--raised);border-radius:10px;padding:16px 20px;margin-bottom:20px">';
+  h+='<div style="font-family:Syne,sans-serif;font-size:20px;font-weight:700;color:'+heroColor+';margin-bottom:4px">'+esc(item[titleKey]||item.name||item.batchId||id.slice(0,8))+'</div>';
+  h+='<div style="font-size:12px;color:var(--muted)">'+labels[type]+(item.date?' · '+item.date:'')+'</div>';
+  if(item.status)h+='<div style="margin-top:8px">'+statusBadge(item.status)+'</div>';
+  h+='</div>';
+
+  // Hash
+  if(item.hash){
+    h+='<div style="margin-bottom:16px"><div style="font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.8px;margin-bottom:5px">SHA-256 VERIFICATION HASH</div>';
+    h+='<div class="hash-box">'+esc(item.hash)+'</div>';
+    h+='<div style="font-size:11px;color:var(--muted);margin-top:4px">Simulated · Connect RMTP Ledger Server to anchor to blockchain</div></div>';
+  }
+
+  // Fields
+  h+='<div class="info-grid">';
+  var skip=['id','hash','eventChain','flags'];
+  Object.keys(item).forEach(function(k){
+    if(skip.indexOf(k)>-1||!item[k])return;
+    h+='<div class="info-cell"><div class="info-cell-label">'+esc(k.replace(/([A-Z])/g,' $1').trim())+'</div>';
+    h+='<div class="info-cell-val">'+esc(String(item[k]))+'</div></div>';
+  });
+  h+='</div>';
+
+  // Event chain
+  if(item.eventChain&&item.eventChain.length){
+    h+='<div class="divider"><hr/><span>Chain of Custody</span><hr/></div>';
+    var CHAIN_COLORS={Extraction:'#0fa870',Processing:'#1a8fef',Transport:'#d96a10',Transaction:'#c8890f',Export:'#0fa870'};
+    item.eventChain.forEach(function(ev){
+      var ec=CHAIN_COLORS[ev.type]||'#546880';
+      h+='<div class="chain-step"><div class="chain-dot" style="border-color:'+ec+';background:'+ec+'18;color:'+ec+'">'+ev.type.charAt(0)+'</div>';
+      h+='<div class="chain-body"><div class="chain-type" style="color:'+ec+'">'+esc(ev.type)+'</div>';
+      h+='<div class="chain-title">'+esc(ev.desc||'Event')+'</div>';
+      h+='<div class="chain-date">'+esc(ev.date||'')+'</div></div></div>';
+    });
+  }
+
+  // Linked docs
+  var docs=(_mdb.mdocs&&_mdb.mdocs[id])||[];
+  if(docs.length){
+    h+='<div class="divider"><hr/><span>Linked Documents</span><hr/></div>';
+    docs.forEach(function(d){
+      h+='<div class="doc-chip"><div class="doc-icon" style="background:var(--raised)">📄</div>';
+      h+='<div><div class="doc-name">'+esc(d.name)+'</div>';
+      h+='<div class="doc-meta">'+esc(d.docType||'Document')+' · '+esc(d.size||'')+'</div></div></div>';
+    });
+  }
+
+  // Actions
+  h+='<div style="display:flex;gap:8px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)">';
+  h+='<button class="btn btn-secondary btn-sm" onclick="exportRecord(\''+type+'\',\''+id+'\')">⬇ Export TXT</button>';
+  h+='<button class="btn btn-danger btn-sm" style="margin-left:auto" onclick="deleteRecord(\''+type+'\',\''+id+'\')">Delete Record</button>';
+  h+='</div>';
+
+  document.getElementById('detail-modal-body').innerHTML=h;
+  openModal('modal-detail');
+}
+
+function deleteRecord(type,id){
+  if(!confirm('Delete this record? This cannot be undone.'))return;
+  var keyMap={mine:'mines',batch:'batches',processing:'mprocessing',logistics:'mlogistics',transaction:'mtransactions',export:'mexports'};
+  var key=keyMap[type];
+  if(key)_mdb[key]=_mdb[key].filter(function(x){return x.id!==id;});
+  if(_mdb.mdocs)delete _mdb.mdocs[id];
+  save();closeModal('modal-detail');
+  notify('Record deleted','ok');
+  var renders={mine:renderMines,batch:renderBatches,transaction:renderTransactions};
+  if(renders[type])renders[type]();
+  updateNavCounts();
+}
+
+function exportRecord(type,id){
+  var keyMap={mine:'mines',batch:'batches',processing:'mprocessing',logistics:'mlogistics',transaction:'mtransactions',export:'mexports'};
+  var item=(_mdb[keyMap[type]]||[]).find(function(x){return x.id===id;});
+  if(!item)return;
+  var lines=['═'.repeat(60),'RMTP RECORD · '+type.toUpperCase(),'ASC & Associates Ltd. · Generated: '+new Date().toLocaleString(),'═'.repeat(60),''];
+  Object.keys(item).forEach(function(k){
+    if(['id','hash','eventChain'].indexOf(k)<0&&item[k])lines.push(k.toUpperCase().replace(/([A-Z])/g,' $1')+': '+String(item[k]));
+  });
+  if(item.hash)lines.push('','SHA-256 HASH:',item.hash);
+  if(item.eventChain&&item.eventChain.length){
+    lines.push('','CHAIN OF CUSTODY:');
+    item.eventChain.forEach(function(ev,i){lines.push((i+1)+'. ['+ev.type+'] '+ev.desc+' · '+ev.date);});
+  }
+  lines.push('','═'.repeat(60),'© Jimmÿ Gasana · :WANDAHILL: · All Rights Reserved','═'.repeat(60));
+  downloadTxt(lines.join('\n'),'RMTP-'+type+'-'+id.slice(0,8)+'.txt');
+}
+
+// ══════════════════════════════════════════════════════════════
+// FORM HELPERS
+// ══════════════════════════════════════════════════════════════
+function ff(label,id,type,placeholder,val,req){
+  return '<div class="form-group"><label class="form-label" for="'+id+'">'+esc(label)+(req?'<span class="req"> *</span>':'')+'</label>'
+    +'<input id="'+id+'" type="'+(type||'text')+'" placeholder="'+esc(placeholder||'')+'" value="'+esc(val||'')+'" /></div>';
+}
+function ffSel(label,id,opts,val){
+  var h='<div class="form-group"><label class="form-label" for="'+id+'">'+esc(label)+'</label><select id="'+id+'">';
+  opts.forEach(function(o){h+='<option value="'+esc(o)+'"'+(o===val?' selected':'')+'>'+esc(o)+'</option>';});
+  h+='</select></div>';return h;
+}
+function ffArea(label,id,placeholder,val){
+  return '<div class="form-row"><div class="form-group"><label class="form-label" for="'+id+'">'+esc(label)+'</label>'
+    +'<textarea id="'+id+'" placeholder="'+esc(placeholder||'')+'" rows="3">'+esc(val||'')+'</textarea></div></div>';
+}
+function docDropzone(id){
+  return '<div id="'+id+'-zone" class="doc-drop" onclick="document.getElementById(\''+id+'-inp\').click()" ondragover="this.classList.add(\'over\');event.preventDefault()" ondragleave="this.classList.remove(\'over\')" ondrop="handleDocDrop(event,\''+id+'\')">'
+    +'<div style="font-size:28px;opacity:.3">📎</div>'
+    +'<p>Click to upload or drag &amp; drop documents</p>'
+    +'<p style="margin-top:4px;font-size:10px">PDF · DOCX · XLSX · JPG · PNG</p>'
+    +'<input type="file" id="'+id+'-inp" style="display:none" multiple onchange="handleDocInput(event,\''+id+'\')"/>'
+    +'</div><div id="'+id+'-thumbs" style="margin-top:8px"></div>';
+}
+function initDocDrop(id){_uploadQueue[id]=[];}
+function handleDocInput(e,id){
+  var files=Array.from(e.target.files);
+  _uploadQueue[id]=_uploadQueue[id]||[];
+  files.forEach(function(f){_uploadQueue[id].push(f);});
+  renderDocThumbs(id);
+}
+function handleDocDrop(e,id){
+  e.preventDefault();document.getElementById(id+'-zone').classList.remove('over');
+  var files=Array.from(e.dataTransfer.files);
+  _uploadQueue[id]=_uploadQueue[id]||[];
+  files.forEach(function(f){_uploadQueue[id].push(f);});
+  renderDocThumbs(id);
+}
+function renderDocThumbs(id){
+  var el=document.getElementById(id+'-thumbs');if(!el)return;
+  var files=_uploadQueue[id]||[];
+  el.innerHTML=files.map(function(f,i){
+    return '<div class="doc-chip"><div class="doc-icon" style="background:var(--raised)">📄</div><div style="flex:1"><div class="doc-name">'+esc(f.name)+'</div><div class="doc-meta">'+(f.size?(f.size/1024).toFixed(1)+'KB':'')+'</div></div>'
+      +'<button class="btn btn-danger btn-sm" style="padding:3px 7px;font-size:11px" onclick="_uploadQueue[\''+id+'\'].splice('+i+',1);renderDocThumbs(\''+id+'\')">✕</button></div>';
+  }).join('');
+}
+function attachDocs(dropId,recordId){
+  var files=_uploadQueue[dropId]||[];
+  if(!files.length)return;
+  _mdb.mdocs=_mdb.mdocs||{};
+  _mdb.mdocs[recordId]=_mdb.mdocs[recordId]||[];
+  files.forEach(function(f){
+    _mdb.mdocs[recordId].push({name:f.name,size:(f.size/1024).toFixed(1)+'KB',docType:'Document',uploadDate:today()});
+  });
+  delete _uploadQueue[dropId];
+}
+
+// ══════════════════════════════════════════════════════════════
+// DOWNLOAD / EXPORT
+// ══════════════════════════════════════════════════════════════
+function downloadTxt(content,filename){
+  var blob=new Blob([content],{type:'text/plain'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=filename||'rmtp-export.txt';
+  a.click();URL.revokeObjectURL(a.href);
+}
+
+// ══════════════════════════════════════════════════════════════
+// FOOTER
+// ══════════════════════════════════════════════════════════════
+function pageFooter(){
+  return '<div class="page-footer">RWANDA MINING TRANSPARENCY PLATFORM · RMTP<br>'
+    +'<strong>ASC & Associates Ltd.</strong> · <strong>Jimmÿ Gasana</strong> · :WANDAHILL:<br>'
+    +'© Copyright Jimmÿ Gasana · All Rights Reserved · AMS Mining Intelligence</div>';
+}
+
+// ══════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════
+load();
+if(_mdb.oecdData&&_mdb.oecdData.checks){
+  _oecdChecks=_mdb.oecdData.checks;
+}
+updateNavCounts();
+setView('dashboard');
+</script>
+</body>
+</html>
